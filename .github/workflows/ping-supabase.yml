@@ -1,0 +1,26 @@
+name: Ping Supabase (keep alive)
+
+on:
+  schedule:
+    - cron: "0 8 */5 * *"   # cada 5 días a las 8:00 UTC
+  workflow_dispatch:         # también permite ejecutarlo manualmente
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://jvybembfdefoqnnjnuhq.supabase.co/rest/v1/cot_weekly_raw?select=report_date_as_mm_dd_yyyy&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+
+          echo "HTTP status: $RESPONSE"
+
+          if [ "$RESPONSE" != "200" ]; then
+            echo "ERROR: Supabase no respondió correctamente (status $RESPONSE)"
+            exit 1
+          fi
+
+          echo "OK: Supabase activo"

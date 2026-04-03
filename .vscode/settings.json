@@ -1,0 +1,10 @@
+{
+  "terminal.integrated.profiles.windows": {
+    "Claude": {
+      "source": "PowerShell",
+      "args": ["-NoExit", "-Command", "claude"],
+      "icon": "robot"
+    }
+  },
+  "terminal.integrated.defaultProfile.windows": "Claude"
+}
