@@ -11,10 +11,11 @@ jobs:
     steps:
       - name: Ping Supabase
         run: |
+          ANON_KEY="sb_publishable_8ZtiY2Hp9sYD9pwxRKEIsg_kfIafdg5"
           RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
             "https://jvybembfdefoqnnjnuhq.supabase.co/rest/v1/cot_weekly_raw?select=report_date_as_mm_dd_yyyy&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}")
+            -H "apikey: $ANON_KEY" \
+            -H "Authorization: Bearer $ANON_KEY")
 
           echo "HTTP status: $RESPONSE"
 
