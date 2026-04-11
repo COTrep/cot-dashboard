@@ -146,12 +146,6 @@ const CommodityAnalysisPage: NextPage = () => {
     setLoading(true);
     setError(null);
 
-    // 3 years ago from today
-    const cutoff = new Date();
-    cutoff.setFullYear(cutoff.getFullYear() - 3);
-    // Format as YYYYMMDD for the as_of_date column
-    const cutoffStr = cutoff.toISOString().slice(0, 10).replace(/-/g, "");
-
     supabase
       .from("cot_weekly_raw")
       .select(
@@ -165,10 +159,8 @@ const CommodityAnalysisPage: NextPage = () => {
          open_interest_all`
       )
       .eq("market_and_exchange_names", commodityName)
-      // Fetch extra history so rolling COT index has a full 3Y window
-      .gte("as_of_date_in_form_yyyymmdd", cutoffStr)
-      .order("as_of_date_in_form_yyyymmdd", { ascending: true })
-      .limit(2000)
+      .order("report_date_as_mm_dd_yyyy", { ascending: true })
+      .limit(5000)
       .then(({ data, error: sbError }) => {
         if (sbError) {
           setError(sbError.message);
