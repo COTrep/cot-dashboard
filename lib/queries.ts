@@ -2,7 +2,7 @@ import { supabase } from "./supabase";
 import type { CotRow, CommoditySummary } from "./types";
 
 const TABLE = "cot_weekly_raw";
-const ROW_LIMIT = 2000;
+const ROW_LIMIT = 5000;
 
 /** Fetch all distinct commodity names */
 export async function fetchCommodityList(): Promise<string[]> {
@@ -54,7 +54,7 @@ export async function fetchDashboardSummaries(): Promise<CommoditySummary[]> {
     .select(
       "market_and_exchange_names, as_of_date_in_form_yyyymmdd, open_interest_all, prod_merc_positions_long_all, prod_merc_positions_short_all, m_money_positions_long_all, m_money_positions_short_all"
     )
-    .order("as_of_date_in_form_yyyymmdd", { ascending: false })
+    .order("report_date_as_mm_dd_yyyy", { ascending: false })
     .limit(ROW_LIMIT);
 
   if (error) throw new Error(error.message);
