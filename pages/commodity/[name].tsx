@@ -23,6 +23,10 @@ const ManagedMoneyChart = dynamic(
   () => import("../../components/charts/ManagedMoneyChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
+const NetComparisonChart = dynamic(
+  () => import("../../components/charts/NetComparisonChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
 
 interface Props {
   commodityName: string;
@@ -190,6 +194,13 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
                   subtitle="Speculator (hedge fund) long vs short"
                 >
                   <ManagedMoneyChart data={data} />
+                </ChartCard>
+
+                <ChartCard
+                  title="Commercial Net vs Managed Money Net"
+                  subtitle="Hedgers vs speculators — net positioning comparison"
+                >
+                  <NetComparisonChart data={data} />
                 </ChartCard>
               </div>
 
