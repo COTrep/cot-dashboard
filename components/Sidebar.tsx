@@ -164,11 +164,18 @@ export default function Sidebar({ commodities, selected, loading }: Props) {
       style={{ width: "var(--sidebar-width)" }}
     >
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-surface-800 shrink-0">
-        <span className="font-display text-lg font-bold tracking-tight text-white">
-          COT <span className="text-brand-400">Analytics</span>
-        </span>
-        <p className="text-xs text-slate-500 mt-0.5 font-mono">
+      <div className="px-4 py-4 border-b border-slate-800/60 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 bg-brand-600/20 border border-brand-600/40 rounded flex items-center justify-center">
+            <svg className="w-3.5 h-3.5 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+          </div>
+          <span className="font-mono text-sm font-bold tracking-tight text-white">
+            COT<span className="text-brand-400">Analytics</span>
+          </span>
+        </div>
+        <p className="text-[10px] font-mono text-slate-600 mt-1.5 uppercase tracking-widest">
           CFTC · Futures Positioning
         </p>
       </div>
