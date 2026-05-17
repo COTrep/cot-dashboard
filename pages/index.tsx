@@ -5,7 +5,6 @@ import Link from "next/link";
 import clsx from "clsx";
 import Layout from "../components/Layout";
 import SummaryCard from "../components/SummaryCard";
-import FinancialCard from "../components/FinancialCard";
 import FilterBar from "../components/FilterBar";
 import ExportButtons from "../components/ExportButtons";
 import { CardSkeleton } from "../components/ui/Skeletons";
@@ -192,13 +191,7 @@ const Dashboard: NextPage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
             {loading
               ? Array.from({ length: 12 }).map((_, i) => <CardSkeleton key={i} />)
-              : filtered.map((s) =>
-                  getMarketSector(s.name) === "financials" ? (
-                    <FinancialCard key={s.name} summary={s} />
-                  ) : (
-                    <SummaryCard key={s.name} summary={s} />
-                  )
-                )}
+              : filtered.map((s) => <SummaryCard key={s.name} summary={s} />)}
           </div>
 
           {!loading && filtered.length === 0 && (

@@ -1,7 +1,8 @@
 import { supabase } from "./supabase";
-import type { CotRow, CommoditySummary } from "./types";
+import type { CotRow, CommoditySummary, CotFinancialsRow, FinancialSummary } from "./types";
 
 const TABLE = "cot_weekly_raw";
+const FINANCIALS_TABLE = "cot_financials_raw";
 const ROW_LIMIT = 5000;
 
 /** Fetch all distinct commodity names */
@@ -77,4 +78,56 @@ export async function fetchDashboardSummaries(): Promise<CommoditySummary[]> {
   return Array.from(seen.values()).sort((a, b) =>
     a.name.localeCompare(b.name)
   );
+}
+
+/** Fetch latest row per financial instrument for the financials dashboard */
+export async function fetchFinancialSummaries(): Promise<FinancialSummary[]> {
+  const { data, error } = await supabase
+    .from(FINANCIALS_TABLE)
+    .select(
+      "market_and_exchange_names, as_of_date_in_form_yyyymmdd, open_interest_all, dealer_positions_long_all, dealer_positions_short_all, asset_mgr_positions_long_all, asset_mgr_positions_short_all, lev_money_positions_long_all, lev_money_positions_short_all"
+    )
+    .order("as_of_date_in_form_yyyymmdd", { ascending: false })
+    .limit(ROW_LIMIT);
+
+  if (error) throw new Error(error.message);
+
+  const seen = new Map<string, FinancialSummary>();
+  for (const r of (data ?? []) as CotFinancialsRow[]) {
+    if (!seen.has(r.market_and_exchange_names)) {
+      seen.set(r.market_and_exchange_names, {
+        name: r.market_and_exchange_names,
+        openInterest: r.open_interest_all,
+        dealerLong: r.dealer_positions_long_all,
+        dealerShort: r.dealer_positions_short_all,
+        assetMgrLong: r.asset_mgr_positions_long_all,
+        assetMgrShort: r.asset_mgr_positions_short_all,
+        levMoneyLong: r.lev_money_positions_long_all,
+        levMoneyShort: r.lev_money_positions_short_all,
+        latestDate: r.as_of_date_in_form_yyyymmdd,
+      });
+    }
+  }
+  return Array.from(seen.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Fetch historical rows for a specific financial instrument */
+export async function fetchFinancialData(
+  market: string,
+  dateFrom?: string,
+  dateTo?: string
+): Promise<CotFinancialsRow[]> {
+  let query = supabase
+    .from(FINANCIALS_TABLE)
+    .select("*")
+    .eq("market_and_exchange_names", market)
+    .order("as_of_date_in_form_yyyymmdd", { ascending: true })
+    .limit(ROW_LIMIT);
+
+  if (dateFrom) query = query.gte("as_of_date_in_form_yyyymmdd", dateFrom);
+  if (dateTo)   query = query.lte("as_of_date_in_form_yyyymmdd", dateTo);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+  return (data ?? []) as CotFinancialsRow[];
 }

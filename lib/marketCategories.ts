@@ -26,13 +26,15 @@ const CATEGORIES: CategoryConfig[] = [
     icon: "📈",
     keywords: [
       "S&P 500",
+      "S&P 400",
       "NASDAQ",
-      "DOW",
+      "DOW JONES",
       "RUSSELL",
       "NIKKEI",
       "VIX",
       "E-MINI",
       "STOCK INDEX",
+      "STOCK AVERAGE",
     ],
   },
   {
@@ -52,6 +54,7 @@ const CATEGORIES: CategoryConfig[] = [
       "10-YEAR",
       "5-YEAR",
       "2-YEAR",
+      "U.S. TREASURY BOND",
     ],
   },
   {
@@ -67,7 +70,7 @@ const CATEGORIES: CategoryConfig[] = [
       "SWISS FRANC",
       "AUSTRALIAN DOLLAR",
       "MEXICAN PESO",
-      "NEW ZEALAND",
+      "NEW ZEALAND DOLLAR",
       "BRAZILIAN REAL",
       "SOUTH AFRICAN RAND",
       "BITCOIN",
@@ -90,6 +93,8 @@ const CATEGORIES: CategoryConfig[] = [
       "RBOB",
       "PROPANE",
       "ETHANOL",
+      "HENRY HUB",
+      "NAT GAS",
     ],
   },
   {
@@ -104,6 +109,7 @@ const CATEGORIES: CategoryConfig[] = [
       "PLATINUM",
       "PALLADIUM",
       "ALUMINUM",
+      "ALUMINIUM",
       "ZINC",
       "NICKEL",
       "STEEL",
@@ -117,6 +123,7 @@ const CATEGORIES: CategoryConfig[] = [
     keywords: [
       "CORN",
       "SOYBEANS",
+      "SOYBEAN",
       "WHEAT",
       "COFFEE",
       "COTTON",
@@ -124,14 +131,13 @@ const CATEGORIES: CategoryConfig[] = [
       "COCOA",
       "OATS",
       "RICE",
-      "SOYBEAN OIL",
-      "SOYBEAN MEAL",
       "ORANGE JUICE",
       "LUMBER",
       "MILK",
       "CHEESE",
       "BUTTER",
       "CANOLA",
+      "FRZN",
     ],
   },
   {
@@ -139,7 +145,7 @@ const CATEGORIES: CategoryConfig[] = [
     sector: "commodities",
     label: "Livestock",
     icon: "🐄",
-    keywords: ["CATTLE", "HOG", "FEEDER", "PORK BELLY", "LEAN HOG"],
+    keywords: ["CATTLE", "HOGS", "HOG", "FEEDER", "PORK BELLY", "LEAN HOG", "LIVE"],
   },
 ];
 

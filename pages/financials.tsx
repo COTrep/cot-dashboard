@@ -5,10 +5,9 @@ import clsx from "clsx";
 import Layout from "../components/Layout";
 import FinancialCard from "../components/FinancialCard";
 import { CardSkeleton } from "../components/ui/Skeletons";
-import { fetchDashboardSummaries } from "../lib/queries";
-import type { CommoditySummary } from "../lib/types";
+import { fetchFinancialSummaries } from "../lib/queries";
+import type { FinancialSummary } from "../lib/types";
 import {
-  getMarketSector,
   getMarketCategory,
   getCategoryLabel,
   getCategoryIcon,
@@ -17,28 +16,21 @@ import {
 } from "../lib/marketCategories";
 import { formatNumber } from "../utils/format";
 
-// ── Stat summary strip ──────────────────────────────────────────────────────
+// ── Stat strip ──────────────────────────────────────────────────────────────
 
 interface StripStat {
   label: string;
   value: string;
-  sub?: string;
   accent?: string;
 }
 
 function StatStrip({ stats }: { stats: StripStat[] }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
       {stats.map((s) => (
-        <div
-          key={s.label}
-          className="bg-surface-900 border border-surface-800 rounded-xl px-4 py-3"
-        >
-          <p className="text-xs text-slate-500 mb-1">{s.label}</p>
-          <p className={clsx("text-xl font-mono font-bold", s.accent ?? "text-white")}>
-            {s.value}
-          </p>
-          {s.sub && <p className="text-xs text-slate-600 font-mono mt-0.5">{s.sub}</p>}
+        <div key={s.label} className="bg-[#0d1117] border border-slate-800/60 rounded px-4 py-3">
+          <p className="text-[10px] font-mono text-slate-600 uppercase tracking-widest mb-1">{s.label}</p>
+          <p className={clsx("text-xl font-mono font-bold", s.accent ?? "text-white")}>{s.value}</p>
         </div>
       ))}
     </div>
@@ -53,34 +45,27 @@ function CategorySection({
   search,
 }: {
   category: MarketCategory;
-  markets: CommoditySummary[];
+  markets: FinancialSummary[];
   search: string;
 }) {
   const filtered = useMemo(
-    () =>
-      markets.filter((m) =>
-        m.name.toLowerCase().includes(search.toLowerCase())
-      ),
+    () => markets.filter((m) => m.name.toLowerCase().includes(search.toLowerCase())),
     [markets, search]
   );
-
   if (filtered.length === 0) return null;
 
-  const icon = getCategoryIcon(category);
-  const label = getCategoryLabel(category);
-
   return (
-    <section className="mb-10">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="text-lg">{icon}</span>
-        <h2 className="font-display text-base font-semibold text-white tracking-tight">
-          {label}
+    <section className="mb-8">
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800/60">
+        <span className="text-base">{getCategoryIcon(category)}</span>
+        <h2 className="font-mono text-xs font-semibold text-slate-400 uppercase tracking-widest">
+          {getCategoryLabel(category)}
         </h2>
-        <span className="ml-1 text-xs font-mono text-slate-500 bg-surface-800 px-2 py-0.5 rounded-full">
+        <span className="text-[10px] font-mono text-slate-600 bg-slate-800/60 px-1.5 py-0.5 rounded">
           {filtered.length}
         </span>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
         {filtered.map((s) => (
           <FinancialCard key={s.name} summary={s} />
         ))}
@@ -92,140 +77,114 @@ function CategorySection({
 // ── Page ────────────────────────────────────────────────────────────────────
 
 const FinancialsPage: NextPage = () => {
-  const [summaries, setSummaries] = useState<CommoditySummary[]>([]);
+  const [summaries, setSummaries] = useState<FinancialSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [activeCategory, setActiveCategory] = useState<MarketCategory | "all">(
-    "all"
-  );
+  const [activeCategory, setActiveCategory] = useState<MarketCategory | "all">("all");
 
   useEffect(() => {
     setLoading(true);
-    fetchDashboardSummaries()
+    fetchFinancialSummaries()
       .then(setSummaries)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, []);
 
-  const financials = useMemo(
-    () => summaries.filter((s) => getMarketSector(s.name) === "financials"),
-    [summaries]
-  );
-
   // Group by category
   const grouped = useMemo(() => {
-    const map = new Map<MarketCategory, CommoditySummary[]>();
+    const map = new Map<MarketCategory, FinancialSummary[]>();
     for (const cat of FINANCIAL_CATEGORY_ORDER) map.set(cat, []);
-    for (const s of financials) {
+    for (const s of summaries) {
       const cat = getMarketCategory(s.name);
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat)!.push(s);
     }
     return map;
-  }, [financials]);
+  }, [summaries]);
 
-  // Strip stats
+  // Stats
   const stripStats = useMemo<StripStat[]>(() => {
-    if (!financials.length) return [];
-    const totalOI = financials.reduce((a, s) => a + s.openInterest, 0);
-    const bullCount = financials.filter((s) => {
-      const mmTotal = s.managedMoneyLong + s.managedMoneyShort || 1;
-      return (s.managedMoneyLong / mmTotal) * 100 >= 60;
+    if (!summaries.length) return [];
+    const totalOI = summaries.reduce((a, s) => a + s.openInterest, 0);
+    const bullCount = summaries.filter((s) => {
+      const t = s.assetMgrLong + s.assetMgrShort || 1;
+      return (s.assetMgrLong / t) * 100 >= 60;
     }).length;
-    const bearCount = financials.filter((s) => {
-      const mmTotal = s.managedMoneyLong + s.managedMoneyShort || 1;
-      return (s.managedMoneyLong / mmTotal) * 100 <= 40;
+    const bearCount = summaries.filter((s) => {
+      const t = s.assetMgrLong + s.assetMgrShort || 1;
+      return (s.assetMgrLong / t) * 100 <= 40;
     }).length;
     return [
-      {
-        label: "Financial Markets",
-        value: String(financials.length),
-        sub: "tracked instruments",
-      },
-      {
-        label: "Total Open Interest",
-        value: formatNumber(totalOI),
-        sub: "across all financials",
-        accent: "text-brand-400",
-      },
-      {
-        label: "Bullish Signals",
-        value: String(bullCount),
-        sub: "MM sentiment ≥ 60%",
-        accent: "text-emerald-400",
-      },
-      {
-        label: "Bearish Signals",
-        value: String(bearCount),
-        sub: "MM sentiment ≤ 40%",
-        accent: "text-rose-400",
-      },
+      { label: "Instruments", value: String(summaries.length) },
+      { label: "Total OI", value: formatNumber(totalOI), accent: "text-brand-400" },
+      { label: "Bullish", value: String(bullCount), accent: "text-emerald-400" },
+      { label: "Bearish", value: String(bearCount), accent: "text-rose-400" },
     ];
-  }, [financials]);
+  }, [summaries]);
 
   const categoryTabs: Array<{ key: MarketCategory | "all"; label: string }> = [
-    { key: "all", label: "All" },
-    { key: "equity", label: "Equity" },
-    { key: "rates", label: "Rates" },
+    { key: "all", label: "ALL" },
+    { key: "equity", label: "EQUITY" },
+    { key: "rates", label: "RATES" },
     { key: "fx", label: "FX" },
   ];
 
-  const visibleGroups = useMemo(() => {
-    if (activeCategory === "all") return FINANCIAL_CATEGORY_ORDER;
-    return [activeCategory as MarketCategory];
-  }, [activeCategory]);
+  const visibleGroups = useMemo(
+    () => activeCategory === "all" ? FINANCIAL_CATEGORY_ORDER : [activeCategory as MarketCategory],
+    [activeCategory]
+  );
 
   return (
     <>
       <Head>
         <title>Financials — COT Analytics</title>
-        <meta
-          name="description"
-          content="COT positioning for financial futures: equities, rates and currencies"
-        />
       </Head>
 
       <Layout>
-        <div className="px-8 py-8 max-w-[1400px] mx-auto">
-          {/* Page header */}
-          <div className="mb-6">
+        <div className="px-6 py-6 max-w-[1400px] mx-auto">
+
+          {/* Header */}
+          <div className="mb-5">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-slate-500 text-sm font-mono">
-                <a href="/" className="hover:text-white transition-colors">Dashboard</a>
-                <span className="mx-2">/</span>
-                <span className="text-white">Financials</span>
+              <span className="text-[10px] font-mono text-slate-600">
+                <a href="/" className="hover:text-slate-400 transition-colors">DASHBOARD</a>
+                <span className="mx-2 text-slate-700">/</span>
+                <span className="text-slate-400">FINANCIALS</span>
               </span>
             </div>
-            <h1 className="font-display text-3xl font-bold text-white tracking-tight">
-              Financial Futures
-            </h1>
-            <p className="text-slate-400 mt-1 text-sm">
-              CFTC COT positioning — equity indices, interest rates &amp; currencies
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+              <h1 className="font-mono text-xl font-bold text-white tracking-tight">
+                Financial Futures
+              </h1>
+            </div>
+            <p className="text-[11px] font-mono text-slate-600 mt-1 uppercase tracking-wide">
+              CFTC Disaggregated COT · Equity Indices · Rates · FX
             </p>
           </div>
 
-          {/* Stat strip */}
+          {/* Stats */}
           {!loading && !error && <StatStrip stats={stripStats} />}
 
-          {/* Controls row */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-6 border-b border-surface-800">
+          {/* Controls */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
             {/* Category tabs */}
-            <div className="flex items-center gap-1 bg-surface-900 border border-surface-800 rounded-lg p-1">
+            <div className="flex items-center border-b border-slate-800">
               {categoryTabs.map((tab) => (
                 <button
                   key={tab.key}
                   onClick={() => setActiveCategory(tab.key)}
                   className={clsx(
-                    "px-4 py-1.5 rounded-md text-sm font-medium transition-colors",
+                    "px-4 py-2 text-xs font-mono font-medium transition-colors border-b-2 -mb-px",
                     activeCategory === tab.key
-                      ? "bg-brand-600 text-white"
-                      : "text-slate-400 hover:text-white"
+                      ? "border-violet-400 text-violet-400"
+                      : "border-transparent text-slate-500 hover:text-slate-300"
                   )}
                 >
                   {tab.label}
-                  {tab.key !== "all" && (
-                    <span className="ml-1.5 text-xs opacity-60">
+                  {tab.key !== "all" && !loading && (
+                    <span className="ml-1.5 opacity-50">
                       {grouped.get(tab.key as MarketCategory)?.length ?? 0}
                     </span>
                   )}
@@ -235,63 +194,47 @@ const FinancialsPage: NextPage = () => {
 
             {/* Search */}
             <div className="relative">
-              <svg
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.35-4.35" />
+              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
               </svg>
               <input
                 type="text"
                 placeholder="Search financial markets…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-4 py-2 bg-surface-800 border border-surface-700 rounded-lg text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-brand-500 transition-colors w-64"
+                className="pl-8 pr-3 py-1.5 bg-[#0d1117] border border-slate-800 rounded text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-slate-600 transition-colors w-56"
               />
             </div>
           </div>
 
           {/* Error */}
           {error && (
-            <div className="bg-rose-900/30 border border-rose-700 text-rose-300 rounded-xl px-5 py-4 mb-6 text-sm">
-              <strong>Error:</strong> {error}
+            <div className="bg-rose-900/20 border border-rose-800/50 text-rose-400 rounded px-4 py-3 mb-5 text-xs font-mono">
+              ERROR: {error}
             </div>
           )}
 
           {/* Skeleton */}
           {loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <CardSkeleton key={i} />
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+              {Array.from({ length: 12 }).map((_, i) => <CardSkeleton key={i} />)}
             </div>
           )}
 
-          {/* Content grouped by category */}
-          {!loading &&
-            !error &&
-            visibleGroups.map((cat) => (
-              <CategorySection
-                key={cat}
-                category={cat}
-                markets={grouped.get(cat) ?? []}
-                search={search}
-              />
-            ))}
+          {/* Content */}
+          {!loading && !error && visibleGroups.map((cat) => (
+            <CategorySection
+              key={cat}
+              category={cat}
+              markets={grouped.get(cat) ?? []}
+              search={search}
+            />
+          ))}
 
-          {!loading && !error && financials.length === 0 && (
-            <div className="text-center py-24 text-slate-600">
-              <p className="text-4xl mb-3">📊</p>
-              <p className="font-mono text-sm">
-                No financial futures found in the current dataset.
-              </p>
-              <p className="text-xs mt-2 text-slate-700">
-                The keyword classifier may need tuning for your market names.
-              </p>
+          {!loading && !error && summaries.length === 0 && (
+            <div className="text-center py-24 text-slate-700">
+              <p className="font-mono text-sm">NO DATA IN cot_financials_raw</p>
             </div>
           )}
         </div>

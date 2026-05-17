@@ -1,8 +1,8 @@
 import React from "react";
 import Link from "next/link";
 import clsx from "clsx";
-import type { CommoditySummary } from "../lib/types";
-import { formatNumber, formatDate } from "../utils/format";
+import type { FinancialSummary } from "../lib/types";
+import { formatNumber } from "../utils/format";
 import {
   getMarketCategory,
   getCategoryLabel,
@@ -10,11 +10,10 @@ import {
 } from "../lib/marketCategories";
 
 interface Props {
-  summary: CommoditySummary;
+  summary: FinancialSummary;
 }
 
 function SentimentGauge({ value }: { value: number }) {
-  // value 0-100
   const color =
     value >= 60 ? "bg-emerald-500" : value <= 40 ? "bg-rose-500" : "bg-amber-500";
   return (
@@ -47,19 +46,29 @@ function SignalChip({ value }: { value: number }) {
   );
 }
 
+function formatDateIso(iso: string): string {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+
 export default function FinancialCard({ summary }: Props) {
   const category = getMarketCategory(summary.name);
   const styles = CATEGORY_STYLES[category];
   const label = getCategoryLabel(category);
 
-  const commNet = summary.commercialLong - summary.commercialShort;
-  const mmNet = summary.managedMoneyLong - summary.managedMoneyShort;
-  const mmTotal = summary.managedMoneyLong + summary.managedMoneyShort || 1;
-  const sentiment = Math.round((summary.managedMoneyLong / mmTotal) * 100);
+  // Asset managers = institutional "smart money" for financials
+  const assetMgrNet = summary.assetMgrLong - summary.assetMgrShort;
+  const levMoneyNet = summary.levMoneyLong - summary.levMoneyShort;
+  const dealerNet   = summary.dealerLong - summary.dealerShort;
+
+  // Sentiment based on asset manager long ratio
+  const amTotal = summary.assetMgrLong + summary.assetMgrShort || 1;
+  const sentiment = Math.round((summary.assetMgrLong / amTotal) * 100);
 
   return (
     <Link
-      href={`/markets/${encodeURIComponent(summary.name)}`}
+      href={`/financials/${encodeURIComponent(summary.name)}`}
       className={clsx(
         "block bg-[#0d1117] border border-slate-800/80 rounded-lg overflow-hidden",
         "hover:border-slate-600 hover:bg-[#111820] transition-all group"
@@ -78,10 +87,10 @@ export default function FinancialCard({ summary }: Props) {
               </span>
             </div>
             <h3 className="text-xs font-mono font-semibold text-white leading-tight truncate">
-              {summary.name}
+              {summary.name.split(" - ")[0]}
             </h3>
             <p className="text-[10px] font-mono text-slate-600 mt-0.5">
-              {formatDate(summary.latestDate)}
+              {formatDateIso(summary.latestDate)}
             </p>
           </div>
           <SignalChip value={sentiment} />
@@ -95,32 +104,32 @@ export default function FinancialCard({ summary }: Props) {
           </p>
         </div>
 
-        {/* Sentiment gauge */}
+        {/* Asset Mgr Sentiment */}
         <div className="mb-3">
           <div className="flex justify-between items-center mb-1">
-            <span className="text-[10px] font-mono text-slate-600 uppercase tracking-wide">MM Sentiment</span>
+            <span className="text-[10px] font-mono text-slate-600 uppercase tracking-wide">Asset Mgr Sentiment</span>
           </div>
           <SentimentGauge value={sentiment} />
         </div>
 
-        {/* Net positions */}
-        <div className="grid grid-cols-2 gap-2 pt-2.5 border-t border-slate-800/60">
+        {/* Net positions grid */}
+        <div className="grid grid-cols-3 gap-1.5 pt-2.5 border-t border-slate-800/60">
           <div>
-            <p className="text-[10px] font-mono text-slate-600 uppercase mb-0.5">Comm Net</p>
-            <p className={clsx(
-              "text-xs font-mono font-bold",
-              commNet >= 0 ? "text-emerald-400" : "text-rose-400"
-            )}>
-              {commNet >= 0 ? "+" : ""}{formatNumber(commNet)}
+            <p className="text-[10px] font-mono text-slate-600 uppercase mb-0.5">Dealer</p>
+            <p className={clsx("text-[11px] font-mono font-bold", dealerNet >= 0 ? "text-emerald-400" : "text-rose-400")}>
+              {dealerNet >= 0 ? "+" : ""}{formatNumber(dealerNet)}
             </p>
           </div>
           <div>
-            <p className="text-[10px] font-mono text-slate-600 uppercase mb-0.5">MM Net</p>
-            <p className={clsx(
-              "text-xs font-mono font-bold",
-              mmNet >= 0 ? "text-emerald-400" : "text-rose-400"
-            )}>
-              {mmNet >= 0 ? "+" : ""}{formatNumber(mmNet)}
+            <p className="text-[10px] font-mono text-slate-600 uppercase mb-0.5">Asset Mgr</p>
+            <p className={clsx("text-[11px] font-mono font-bold", assetMgrNet >= 0 ? "text-emerald-400" : "text-rose-400")}>
+              {assetMgrNet >= 0 ? "+" : ""}{formatNumber(assetMgrNet)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] font-mono text-slate-600 uppercase mb-0.5">Lev Money</p>
+            <p className={clsx("text-[11px] font-mono font-bold", levMoneyNet >= 0 ? "text-emerald-400" : "text-rose-400")}>
+              {levMoneyNet >= 0 ? "+" : ""}{formatNumber(levMoneyNet)}
             </p>
           </div>
         </div>
