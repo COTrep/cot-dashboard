@@ -1,9 +1,9 @@
-name: Ping Supabase (keep alive)
+﻿name: Ping Supabase (keep alive)
 
 on:
   schedule:
-    - cron: "0 8 */5 * *"   # cada 5 días a las 8:00 UTC
-  workflow_dispatch:         # también permite ejecutarlo manualmente
+    - cron: "0 8 */5 * *"   # cada 5 dÃ­as a las 8:00 UTC
+  workflow_dispatch:         # tambiÃ©n permite ejecutarlo manualmente
 
 jobs:
   ping:
@@ -20,7 +20,7 @@ jobs:
           echo "HTTP status: $RESPONSE"
 
           if [ "$RESPONSE" != "200" ]; then
-            echo "ERROR: Supabase no respondió correctamente (status $RESPONSE)"
+            echo "ERROR: Supabase no respondiÃ³ correctamente (status $RESPONSE)"
             exit 1
           fi
 
