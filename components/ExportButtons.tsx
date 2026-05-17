@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import type { CotRow } from "../lib/types";
 import { exportCsv, exportExcel } from "../utils/exportData";
 
 interface Props {
-  rows: CotRow[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  rows: Record<string, any>[];
   filenameBase?: string;
 }
 
