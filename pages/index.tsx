@@ -2,13 +2,18 @@ import React, { useEffect, useState, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
+import clsx from "clsx";
 import Layout from "../components/Layout";
 import SummaryCard from "../components/SummaryCard";
+import FinancialCard from "../components/FinancialCard";
 import FilterBar from "../components/FilterBar";
 import ExportButtons from "../components/ExportButtons";
 import { CardSkeleton } from "../components/ui/Skeletons";
 import { fetchDashboardSummaries } from "../lib/queries";
 import type { CommoditySummary } from "../lib/types";
+import { getMarketSector } from "../lib/marketCategories";
+
+type Tab = "all" | "commodities" | "financials";
 
 const Dashboard: NextPage = () => {
   const [summaries, setSummaries] = useState<CommoditySummary[]>([]);
@@ -17,6 +22,7 @@ const Dashboard: NextPage = () => {
   const [search, setSearch] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [activeTab, setActiveTab] = useState<Tab>("all");
 
   useEffect(() => {
     setLoading(true);
@@ -26,11 +32,19 @@ const Dashboard: NextPage = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  const tabFiltered = useMemo(() => {
+    if (activeTab === "commodities")
+      return summaries.filter((s) => getMarketSector(s.name) === "commodities");
+    if (activeTab === "financials")
+      return summaries.filter((s) => getMarketSector(s.name) === "financials");
+    return summaries;
+  }, [summaries, activeTab]);
+
   const filtered = useMemo(() => {
-    return summaries.filter((s) =>
+    return tabFiltered.filter((s) =>
       s.name.toLowerCase().includes(search.toLowerCase())
     );
-  }, [summaries, search]);
+  }, [tabFiltered, search]);
 
   const exportRows = useMemo(
     () =>
@@ -62,14 +76,57 @@ const Dashboard: NextPage = () => {
 
       <Layout>
         <div className="px-8 py-8 max-w-[1400px] mx-auto">
-          <div className="mb-8">
-            <h1 className="font-display text-3xl font-bold text-white tracking-tight">
-              Market Overview
-            </h1>
-            <p className="text-slate-400 mt-1 text-sm">
-              CFTC Commitment of Traders — latest positioning snapshot per
-              market
-            </p>
+          <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 className="font-display text-3xl font-bold text-white tracking-tight">
+                Market Overview
+              </h1>
+              <p className="text-slate-400 mt-1 text-sm">
+                CFTC Commitment of Traders — latest positioning snapshot per
+                market
+              </p>
+            </div>
+            <Link
+              href="/financials"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600/20 border border-violet-600/40 text-violet-300 hover:bg-violet-600/30 rounded-lg text-sm font-medium transition-colors"
+            >
+              <span>📊</span>
+              Financial Futures Dashboard
+              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M7 17L17 7M17 7H7M17 7v10" />
+              </svg>
+            </Link>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex items-center gap-1 bg-surface-900 border border-surface-800 rounded-lg p-1 mb-6 w-fit">
+            {(["all", "commodities", "financials"] as Tab[]).map((tab) => {
+              const counts = {
+                all: summaries.length,
+                commodities: summaries.filter((s) => getMarketSector(s.name) === "commodities").length,
+                financials: summaries.filter((s) => getMarketSector(s.name) === "financials").length,
+              };
+              const labels = { all: "All Markets", commodities: "Commodities", financials: "Financials" };
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={clsx(
+                    "px-4 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-2",
+                    activeTab === tab
+                      ? "bg-brand-600 text-white"
+                      : "text-slate-400 hover:text-white"
+                  )}
+                >
+                  {labels[tab]}
+                  {!loading && (
+                    <span className={clsx("text-xs", activeTab === tab ? "opacity-70" : "opacity-40")}>
+                      {counts[tab]}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-6 border-b border-surface-800">
@@ -139,16 +196,20 @@ const Dashboard: NextPage = () => {
               ? Array.from({ length: 12 }).map((_, i) => (
                   <CardSkeleton key={i} />
                 ))
-              : filtered.map((s) => (
-                  <Link
-                    key={s.name}
-                    href={`/markets/${encodeURIComponent(s.name)}`}
-                  >
-                    <div className="cursor-pointer hover:scale-[1.02] transition-transform">
-                      <SummaryCard summary={s} />
-                    </div>
-                  </Link>
-                ))}
+              : filtered.map((s) =>
+                  getMarketSector(s.name) === "financials" ? (
+                    <FinancialCard key={s.name} summary={s} />
+                  ) : (
+                    <Link
+                      key={s.name}
+                      href={`/markets/${encodeURIComponent(s.name)}`}
+                    >
+                      <div className="cursor-pointer hover:scale-[1.02] transition-transform">
+                        <SummaryCard summary={s} />
+                      </div>
+                    </Link>
+                  )
+                )}
           </div>
 
           {!loading && filtered.length === 0 && (
