@@ -198,12 +198,9 @@ export default function Sidebar({ commodities, selected, loading }: Props) {
             stroke="currentColor"
             strokeWidth={2}
           >
-            <rect x="3" y="3" width="7" height="7" rx="1" />
-            <rect x="14" y="3" width="7" height="7" rx="1" />
-            <rect x="3" y="14" width="7" height="7" rx="1" />
-            <rect x="14" y="14" width="7" height="7" rx="1" />
+            <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />
           </svg>
-          Dashboard
+          Commodities
         </Link>
 
         <Link

@@ -77,7 +77,7 @@ const Dashboard: NextPage = () => {
   return (
     <>
       <Head>
-        <title>COT Analytics Dashboard</title>
+        <title>Commodities — COT Analytics</title>
         <meta name="description" content="CFTC Commitment of Traders analytics" />
       </Head>
 
@@ -94,7 +94,7 @@ const Dashboard: NextPage = () => {
                 </span>
               </div>
               <h1 className="font-mono text-xl font-bold text-white tracking-tight">
-                Market Positioning Overview
+                Commodities Positioning
               </h1>
             </div>
 

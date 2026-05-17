@@ -4,6 +4,7 @@ import type { CotRow, CommoditySummary, CotFinancialsRow, FinancialSummary } fro
 const TABLE = "cot_weekly_raw";
 const FINANCIALS_TABLE = "cot_financials_raw";
 const ROW_LIMIT = 5000;
+const FINANCIALS_ROW_LIMIT = 25000;
 
 /** Fetch all distinct commodity names */
 export async function fetchCommodityList(): Promise<string[]> {
@@ -88,7 +89,7 @@ export async function fetchFinancialSummaries(): Promise<FinancialSummary[]> {
       "market_and_exchange_names, as_of_date_in_form_yyyymmdd, open_interest_all, dealer_positions_long_all, dealer_positions_short_all, asset_mgr_positions_long_all, asset_mgr_positions_short_all, lev_money_positions_long_all, lev_money_positions_short_all"
     )
     .order("as_of_date_in_form_yyyymmdd", { ascending: false })
-    .limit(ROW_LIMIT);
+    .limit(FINANCIALS_ROW_LIMIT);
 
   if (error) throw new Error(error.message);
 
