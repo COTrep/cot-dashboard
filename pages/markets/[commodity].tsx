@@ -8,7 +8,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../../lib/supabase";
 import COTChart from "../../components/COTChart";
 import {
   processRawCotData,
@@ -22,13 +22,6 @@ import {
   type ProcessedCotRow,
   type CotSummary,
 } from "../../utils/cotCalculations";
-
-// ─── Supabase (re-uses your existing env vars) ────────────────────────────────
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
