@@ -1,37 +1,13 @@
 # ============================================================
 # AGENTE CLAUDE - Ejecutor automatico de cambios
 # Uso: powershell -ExecutionPolicy Bypass -File .\agente-claude.ps1
-#
-# Requiere un archivo .env junto a este script (no se sube a git)
-# con VERCEL_TOKEN y GITHUB_TOKEN. Ver .env.example para el formato.
 # ============================================================
 
-$PROJECT_PATH = "C:\Users\Jesï¿½s\Downloads\cot-dashboard\cot-dashboard"
-
-$envFile = Join-Path $PSScriptRoot ".env"
-if (Test-Path $envFile) {
-    Get-Content $envFile | ForEach-Object {
-        if ($_ -match '^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$') {
-            [Environment]::SetEnvironmentVariable($matches[1], $matches[2].Trim(), "Process")
-        }
-    }
-}
-
-$VERCEL_TOKEN = $env:VERCEL_TOKEN
-$GITHUB_TOKEN = $env:GITHUB_TOKEN
+$PROJECT_PATH = "C:\Users\Jesús\Downloads\cot-dashboard\cot-dashboard"
+$VERCEL_TOKEN = "vcp_2xXMVNONeYtjVtG4mt0ml7w3foxqV0yHiynfEmUBH66gr67pk90hgWhH"
+$GITHUB_TOKEN = "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"
 $GITHUB_USER  = "COTrep"
 $REPO_NAME    = "cot-dashboard"
-
-if (-not $VERCEL_TOKEN -or -not $GITHUB_TOKEN) {
-    Write-Host ""
-    Write-Host "  [ERROR] Faltan credenciales." -ForegroundColor Red
-    Write-Host "  Crea un archivo .env junto a este script con:" -ForegroundColor Yellow
-    Write-Host "    VERCEL_TOKEN=tu_token_de_vercel"
-    Write-Host "    GITHUB_TOKEN=tu_token_de_github"
-    Write-Host "  (ver .env.example)" -ForegroundColor Yellow
-    Read-Host "`n  Pulsa Enter para salir"
-    exit
-}
 
 function Write-Ok($msg)    { Write-Host "  [OK] $msg" -ForegroundColor Green }
 function Write-Info($msg)  { Write-Host "  [..] $msg" -ForegroundColor Cyan }
