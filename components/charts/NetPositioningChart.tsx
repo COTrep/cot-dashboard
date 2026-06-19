@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotRow } from "../../lib/types";
-import { parseReportDate } from "../../utils/cotCalculations";
+import { formatDate } from "../../utils/format";
 
 interface Props {
   data: CotRow[];
@@ -16,7 +16,7 @@ const COLORS = {
 
 export default function NetPositioningChart({ data }: Props) {
   const option = useMemo(() => {
-    const dates = data.map((r) => parseReportDate(r.report_date_as_mm_dd_yyyy));
+    const dates = data.map((r) => formatDate(r.as_of_date_in_form_yyyymmdd));
     const commercialNet = data.map(
       (r) => r.prod_merc_positions_long_all - r.prod_merc_positions_short_all
     );
