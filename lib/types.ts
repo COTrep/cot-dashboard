@@ -23,6 +23,10 @@ export interface CotFinancialsRow {
   asset_mgr_positions_short_all: number;
   lev_money_positions_long_all: number;
   lev_money_positions_short_all: number;
+  other_rept_positions_long_all: number;
+  other_rept_positions_short_all: number;
+  nonrept_positions_long_all: number;
+  nonrept_positions_short_all: number;
   change_in_dealer_long_all: number;
   change_in_dealer_short_all: number;
   change_in_asset_mgr_long_all: number;

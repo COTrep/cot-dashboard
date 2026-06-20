@@ -27,6 +27,14 @@ const NetPositioningChart = dynamic(
   () => import("../../components/charts/NetPositioningChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
+const CommercialCombinedChart = dynamic(
+  () => import("../../components/charts/CommercialCombinedChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const NetFundChart = dynamic(
+  () => import("../../components/charts/NetFundChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
 
 interface Props {
   commodityName: string;
@@ -176,6 +184,20 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
               {/* Charts */}
               <div className="space-y-5">
                 <ChartCard
+                  title="Commercial Net"
+                  subtitle="Producer/Merchant + Swap Dealers combinados — el 'Commercial graph' para UCL/LCL"
+                >
+                  <CommercialCombinedChart data={data} />
+                </ChartCard>
+
+                <ChartCard
+                  title="Net-Fund Position"
+                  subtitle="Managed Money neto — sin el ruido de los demás grupos"
+                >
+                  <NetFundChart data={data} />
+                </ChartCard>
+
+                <ChartCard
                   title="Open Interest"
                   subtitle="Total open contracts over time"
                 >
@@ -183,24 +205,24 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
                 </ChartCard>
 
                 <ChartCard
-                  title="Commercial Positions"
+                  title="Net Positioning + Open Interest (vista combinada)"
+                  subtitle="Commercial, Swap Dealers y Managed Money por separado, vs Open Interest"
+                >
+                  <NetPositioningChart data={data} />
+                </ChartCard>
+
+                <ChartCard
+                  title="Commercial Positions (detalle)"
                   subtitle="Producer / merchant long vs short (hedgers)"
                 >
                   <CommercialChart data={data} />
                 </ChartCard>
 
                 <ChartCard
-                  title="Managed Money Positions"
+                  title="Managed Money Positions (detalle)"
                   subtitle="Speculator (hedge fund) long vs short"
                 >
                   <ManagedMoneyChart data={data} />
-                </ChartCard>
-
-                <ChartCard
-                  title="Net Positioning + Open Interest"
-                  subtitle="Commercial, Hedge Fund and Swap Dealer net positions vs total open interest"
-                >
-                  <NetPositioningChart data={data} />
                 </ChartCard>
               </div>
 

@@ -22,6 +22,14 @@ const DealerLevMoneyChart = dynamic(
   () => import("../../components/charts/FinancialPositionsChart").then((m) => m.DealerLevMoneyChart),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
+const NetFundChart = dynamic(
+  () => import("../../components/charts/FinancialPositionsChart").then((m) => m.NetFundChart),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const FinancialNetPositioningChart = dynamic(
+  () => import("../../components/charts/FinancialPositionsChart").then((m) => m.FinancialNetPositioningChart),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
 
 interface Props {
   marketName: string;
@@ -138,13 +146,25 @@ const FinancialDetailPage: NextPage<Props> = ({ marketName }) => {
 
               {/* Charts */}
               <div className="space-y-5">
+                <ChartCard title="Net-Fund Position" subtitle="Leveraged Funds neto — sin el ruido de los demás grupos">
+                  <NetFundChart data={data} />
+                </ChartCard>
+
                 <ChartCard title="Open Interest" subtitle="Total open contracts over time">
                   <FinancialOIChart data={data} />
                 </ChartCard>
-                <ChartCard title="Asset Manager Positions" subtitle="Institutional money — long, short, and net">
+
+                <ChartCard
+                  title="Net Positioning + Open Interest (vista combinada)"
+                  subtitle="Dealer, Asset Manager, Leveraged Funds, Other Reportables y Nonreportable vs Open Interest — click en la leyenda para mostrar/ocultar series"
+                >
+                  <FinancialNetPositioningChart data={data} />
+                </ChartCard>
+
+                <ChartCard title="Asset Manager Positions (detalle)" subtitle="Institutional money — long, short, and net">
                   <AssetManagerChart data={data} />
                 </ChartCard>
-                <ChartCard title="Dealer vs Leveraged Money Net" subtitle="Dealer intermediary vs speculative hedge funds">
+                <ChartCard title="Dealer vs Leveraged Money Net (detalle)" subtitle="Dealer intermediary vs speculative hedge funds">
                   <DealerLevMoneyChart data={data} />
                 </ChartCard>
               </div>
