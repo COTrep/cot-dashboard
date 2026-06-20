@@ -6,8 +6,7 @@
 
 export interface RawCotRow {
   market_and_exchange_names: string;
-  report_date_as_mm_dd_yyyy: string;
-  as_of_date_in_form_yyyymmdd?: string;
+  as_of_date_in_form_yyyymmdd: string;
   prod_merc_positions_long_all: number;
   prod_merc_positions_short_all: number;
   m_money_positions_long_all: number;
@@ -35,40 +34,6 @@ export interface CotSummary {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-/** Parse "MM/DD/YYYY" → "YYYY-MM-DD" for sorting & charting */
-export function parseReportDate(mmddyyyy: string): string {
-  if (!mmddyyyy) return "";
-  // Handle both "MM/DD/YYYY" and "YYYYMMDD" formats
-  if (mmddyyyy.includes("/")) {
-    const [mm, dd, yyyy] = mmddyyyy.split("/");
-    return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
-  }
-  if (mmddyyyy.length === 8) {
-    return `${mmddyyyy.slice(0, 4)}-${mmddyyyy.slice(4, 6)}-${mmddyyyy.slice(6, 8)}`;
-  }
-  return mmddyyyy;
-}
-
-/** Subtract N years from an ISO date string */
-export function subtractYears(isoDate: string, years: number): string {
-  const d = new Date(isoDate);
-  d.setFullYear(d.getFullYear() - years);
-  return d.toISOString().slice(0, 10);
-}
-
-/** Filter rows to the last N months relative to the most recent date in the set */
-export function filterByTimeframe(
-  rows: ProcessedCotRow[],
-  months: number
-): ProcessedCotRow[] {
-  if (!rows.length) return rows;
-  const latest = rows[rows.length - 1].date;
-  const cutoff = new Date(latest);
-  cutoff.setMonth(cutoff.getMonth() - months);
-  const cutoffStr = cutoff.toISOString().slice(0, 10);
-  return rows.filter((r) => r.date >= cutoffStr);
-}
 
 // ─── COT Index ───────────────────────────────────────────────────────────────
 
@@ -100,12 +65,10 @@ function calcCotIndex(
 export function processRawCotData(rows: RawCotRow[]): ProcessedCotRow[] {
   if (!rows.length) return [];
 
-  // Sort ascending by date
-  const sorted = [...rows].sort((a, b) => {
-    const da = parseReportDate(a.report_date_as_mm_dd_yyyy);
-    const db = parseReportDate(b.report_date_as_mm_dd_yyyy);
-    return da.localeCompare(db);
-  });
+  // Sort ascending by date (ISO yyyy-mm-dd, lexicographic sort is correct)
+  const sorted = [...rows].sort((a, b) =>
+    a.as_of_date_in_form_yyyymmdd.localeCompare(b.as_of_date_in_form_yyyymmdd)
+  );
 
   const commercialNets = sorted.map(
     (r) => r.prod_merc_positions_long_all - r.prod_merc_positions_short_all
@@ -113,8 +76,8 @@ export function processRawCotData(rows: RawCotRow[]): ProcessedCotRow[] {
   const cotIndexValues = calcCotIndex(commercialNets);
 
   return sorted.map((r, i) => ({
-    date: parseReportDate(r.report_date_as_mm_dd_yyyy),
-    rawDate: r.report_date_as_mm_dd_yyyy,
+    date: r.as_of_date_in_form_yyyymmdd,
+    rawDate: r.as_of_date_in_form_yyyymmdd,
     commercialNet: commercialNets[i],
     managedMoneyNet:
       r.m_money_positions_long_all - r.m_money_positions_short_all,

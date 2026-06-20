@@ -1,15 +1,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // pages/markets/[commodity].tsx
 // Professional COT analysis page per commodity.
-// Drop into your existing pages/ folder — no other files need touching.
+// Shares data source (RPC get_commodity_history) and chart components with
+// pages/commodity/[name].tsx — only the KPI/gauge/signal-banner layout below
+// is unique to this page.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { supabase } from "../../lib/supabase";
-import COTChart from "../../components/COTChart";
+import FilterBar from "../../components/FilterBar";
+import { fetchCommodityData } from "../../lib/queries";
+import type { CotRow } from "../../lib/types";
 import {
   processRawCotData,
   buildCotSummary,
@@ -18,10 +22,30 @@ import {
   signalColor,
   cotIndexColor,
   cotIndexLabel,
-  type RawCotRow,
   type ProcessedCotRow,
   type CotSummary,
 } from "../../utils/cotCalculations";
+
+const ChartSkeleton = () => (
+  <div className="animate-pulse bg-slate-800 rounded-xl h-[300px]" />
+);
+
+const CommercialCombinedChart = dynamic(
+  () => import("../../components/charts/CommercialCombinedChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const NetFundChart = dynamic(
+  () => import("../../components/charts/NetFundChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const OpenInterestChart = dynamic(
+  () => import("../../components/charts/OpenInterestChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const NetPositioningChart = dynamic(
+  () => import("../../components/charts/NetPositioningChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -66,6 +90,26 @@ function MetricCard({
   );
 }
 
+function ChartCard({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+      <div className="mb-5">
+        <h2 className="text-base font-semibold text-white">{title}</h2>
+        {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 function Skeleton({ className }: { className?: string }) {
   return (
     <div className={`animate-pulse bg-slate-800 rounded-xl ${className ?? ""}`} />
@@ -80,7 +124,7 @@ function LoadingSkeleton() {
           <Skeleton key={i} className="h-24" />
         ))}
       </div>
-      <Skeleton className="h-[480px]" />
+      <Skeleton className="h-[300px]" />
     </div>
   );
 }
@@ -128,46 +172,30 @@ const CommodityAnalysisPage: NextPage = () => {
   const { commodity } = router.query;
   const commodityName = typeof commodity === "string" ? decode(commodity) : null;
 
-  const [rawRows, setRawRows] = useState<RawCotRow[]>([]);
+  const [data, setData] = useState<CotRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
-  // ─── Fetch 3Y of data from Supabase ────────────────────────────────────────
-  useEffect(() => {
+  const loadData = useCallback(() => {
     if (!commodityName) return;
-
     setLoading(true);
     setError(null);
+    fetchCommodityData(commodityName, dateFrom || undefined, dateTo || undefined)
+      .then(setData)
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, [commodityName, dateFrom, dateTo]);
 
-    supabase
-      .from("cot_weekly_raw")
-      .select(
-        `market_and_exchange_names,
-         report_date_as_mm_dd_yyyy,
-         as_of_date_in_form_yyyymmdd,
-         prod_merc_positions_long_all,
-         prod_merc_positions_short_all,
-         m_money_positions_long_all,
-         m_money_positions_short_all,
-         open_interest_all`
-      )
-      .eq("market_and_exchange_names", commodityName)
-      .order("report_date_as_mm_dd_yyyy", { ascending: true })
-      .limit(5000)
-      .then(({ data, error: sbError }) => {
-        if (sbError) {
-          setError(sbError.message);
-        } else {
-          setRawRows((data ?? []) as RawCotRow[]);
-        }
-        setLoading(false);
-      });
-  }, [commodityName]);
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-  // ─── Process data ───────────────────────────────────────────────────────────
+  // ─── Process data for KPI cards / COT Index gauge / signal banner ─────────
   const processed: ProcessedCotRow[] = useMemo(
-    () => processRawCotData(rawRows),
-    [rawRows]
+    () => processRawCotData(data),
+    [data]
   );
 
   const summary: CotSummary | null = useMemo(
@@ -208,7 +236,7 @@ const CommodityAnalysisPage: NextPage = () => {
           </nav>
 
           {/* ── Page title ── */}
-          <div className="mb-8">
+          <div className="mb-6">
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <h1 className="text-2xl font-bold text-white leading-tight mb-1">
@@ -226,6 +254,17 @@ const CommodityAnalysisPage: NextPage = () => {
             </div>
           </div>
 
+          {/* ── Date range controls ── */}
+          <div className="mb-6 pb-6 border-b border-slate-800">
+            <FilterBar
+              dateFrom={dateFrom}
+              dateTo={dateTo}
+              onDateFromChange={setDateFrom}
+              onDateToChange={setDateTo}
+              onReset={() => { setDateFrom(""); setDateTo(""); }}
+            />
+          </div>
+
           {/* ── Error ── */}
           {error && (
             <div className="bg-rose-900/30 border border-rose-700 text-rose-300 rounded-xl px-5 py-4 mb-6 text-sm">
@@ -239,7 +278,7 @@ const CommodityAnalysisPage: NextPage = () => {
           {/* ── Content ── */}
           {!loading && !error && (
             <>
-              {processed.length === 0 ? (
+              {data.length === 0 ? (
                 <div className="text-center py-24 text-slate-600 font-mono">
                   No data found for this commodity.
                 </div>
@@ -280,7 +319,7 @@ const CommodityAnalysisPage: NextPage = () => {
                     {/* COT Index */}
                     <div className="bg-slate-900 border border-slate-800 rounded-2xl px-5 py-4 flex flex-col gap-2">
                       <p className="text-[11px] uppercase tracking-widest text-slate-500 font-mono">
-                        COT Index <span className="normal-case">(3Y)</span>
+                        COT Index <span className="normal-case">(156wk rolling)</span>
                       </p>
                       <CotIndexGauge value={summary?.cotIndex ?? null} />
                     </div>
@@ -330,19 +369,35 @@ const CommodityAnalysisPage: NextPage = () => {
                     </div>
                   )}
 
-                  {/* ── Chart card ── */}
-                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                    <div className="mb-5">
-                      <h2 className="text-base font-semibold text-white">
-                        Positioning History
-                      </h2>
-                      <p className="text-xs text-slate-500 mt-0.5">
-                        Commercial Net · Managed Money Net · Open Interest ·{" "}
-                        {processed.length} weeks
-                      </p>
-                    </div>
+                  {/* ── Charts ── */}
+                  <div className="space-y-5">
+                    <ChartCard
+                      title="Commercial Net"
+                      subtitle="Producer/Merchant + Swap Dealers combinados — el 'Commercial graph' para UCL/LCL"
+                    >
+                      <CommercialCombinedChart data={data} />
+                    </ChartCard>
 
-                    <COTChart data={processed} commodity={commodityName ?? ""} />
+                    <ChartCard
+                      title="Net-Fund Position"
+                      subtitle="Managed Money neto — sin el ruido de los demás grupos"
+                    >
+                      <NetFundChart data={data} />
+                    </ChartCard>
+
+                    <ChartCard
+                      title="Open Interest"
+                      subtitle="Total open contracts over time"
+                    >
+                      <OpenInterestChart data={data} />
+                    </ChartCard>
+
+                    <ChartCard
+                      title="Net Positioning + Open Interest (vista combinada)"
+                      subtitle="Commercial, Swap Dealers y Managed Money por separado, vs Open Interest"
+                    >
+                      <NetPositioningChart data={data} />
+                    </ChartCard>
                   </div>
 
                   {/* ── Legend / methodology note ── */}
@@ -357,7 +412,7 @@ const CommodityAnalysisPage: NextPage = () => {
                     </span>
                     <span>
                       COT Index = (Current − Min) / (Max − Min) × 100, rolling
-                      3Y window
+                      156-week window
                     </span>
                   </div>
                 </>
