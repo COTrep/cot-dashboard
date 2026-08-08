@@ -5,35 +5,38 @@ import dynamic from "next/dynamic";
 import Layout from "../../components/Layout";
 import FilterBar from "../../components/FilterBar";
 import ExportButtons from "../../components/ExportButtons";
+import LegacyEquivalencePanel from "../../components/charts/LegacyEquivalencePanel";
 import { ChartSkeleton, Spinner } from "../../components/ui/Skeletons";
 import { fetchFinancialData } from "../../lib/queries";
 import { formatNumber } from "../../utils/format";
 import type { CotFinancialsRow } from "../../lib/types";
 
-const FinancialOIChart = dynamic(
-  () => import("../../components/charts/FinancialPositionsChart").then((m) => m.FinancialOIChart),
+const DealerChart = dynamic(
+  () => import("../../components/charts/DealerChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 const AssetManagerChart = dynamic(
-  () => import("../../components/charts/FinancialPositionsChart").then((m) => m.AssetManagerChart),
+  () => import("../../components/charts/AssetManagerChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
-const DealerLevMoneyChart = dynamic(
-  () => import("../../components/charts/FinancialPositionsChart").then((m) => m.DealerLevMoneyChart),
+const LeveragedFundsChart = dynamic(
+  () => import("../../components/charts/LeveragedFundsChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
-const NetFundChart = dynamic(
-  () => import("../../components/charts/FinancialPositionsChart").then((m) => m.NetFundChart),
+const OtherReportablesChart = dynamic(
+  () => import("../../components/charts/OtherReportablesChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
-const FinancialNetPositioningChart = dynamic(
-  () => import("../../components/charts/FinancialPositionsChart").then((m) => m.FinancialNetPositioningChart),
+const FinancialCombinedNetChart = dynamic(
+  () => import("../../components/charts/FinancialCombinedNetChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const FinancialOIChart = dynamic(
+  () => import("../../components/charts/FinancialOIChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
 
-interface Props {
-  marketName: string;
-}
+interface Props { marketName: string; }
 
 function StatBadge({ label, value, color }: { label: string; value: number; color: string }) {
   return (
@@ -72,30 +75,23 @@ const FinancialDetailPage: NextPage<Props> = ({ marketName }) => {
       .finally(() => setLoading(false));
   }, [marketName, dateFrom, dateTo]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const latest = data[data.length - 1];
 
-  const dealerNet    = latest ? latest.dealer_positions_long_all - latest.dealer_positions_short_all : 0;
-  const assetMgrNet  = latest ? latest.asset_mgr_positions_long_all - latest.asset_mgr_positions_short_all : 0;
-  const levMoneyNet  = latest ? latest.lev_money_positions_long_all - latest.lev_money_positions_short_all : 0;
+  const dealerNet   = latest ? latest.dealer_positions_long_all - latest.dealer_positions_short_all : 0;
+  const assetMgrNet = latest ? latest.asset_mgr_positions_long_all - latest.asset_mgr_positions_short_all : 0;
+  const levMoneyNet = latest ? latest.lev_money_positions_long_all - latest.lev_money_positions_short_all : 0;
 
   return (
     <>
-      <Head>
-        <title>{marketName} — COT Analytics</title>
-      </Head>
+      <Head><title>{marketName} — COT Analytics</title></Head>
 
       <Layout>
         <div className="px-8 py-8 max-w-[1200px] mx-auto">
           {/* Header */}
           <div className="mb-6">
-            <a
-              href="/financials"
-              className="text-xs text-slate-500 hover:text-violet-400 font-mono transition-colors inline-flex items-center gap-1 mb-3"
-            >
+            <a href="/financials" className="text-xs text-slate-500 hover:text-violet-400 font-mono transition-colors inline-flex items-center gap-1 mb-3">
               <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                 <path d="M19 12H5M12 5l-7 7 7 7" />
               </svg>
@@ -138,34 +134,39 @@ const FinancialDetailPage: NextPage<Props> = ({ marketName }) => {
             <>
               {/* KPI badges */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-                <StatBadge label="Open Interest"   value={latest.open_interest_all} color="text-white" />
-                <StatBadge label="Dealer Net"      value={dealerNet}   color={dealerNet >= 0 ? "text-emerald-400" : "text-rose-400"} />
-                <StatBadge label="Asset Mgr Net"   value={assetMgrNet} color={assetMgrNet >= 0 ? "text-emerald-400" : "text-rose-400"} />
-                <StatBadge label="Lev Money Net"   value={levMoneyNet} color={levMoneyNet >= 0 ? "text-emerald-400" : "text-rose-400"} />
+                <StatBadge label="Open Interest" value={latest.open_interest_all} color="text-white" />
+                <StatBadge label="Dealer Net" value={dealerNet} color={dealerNet >= 0 ? "text-emerald-400" : "text-rose-400"} />
+                <StatBadge label="Asset Mgr Net" value={assetMgrNet} color={assetMgrNet >= 0 ? "text-emerald-400" : "text-rose-400"} />
+                <StatBadge label="Lev Money Net" value={levMoneyNet} color={levMoneyNet >= 0 ? "text-emerald-400" : "text-rose-400"} />
               </div>
+
+              {/* Equivalence panel — always visible */}
+              <LegacyEquivalencePanel type="financial" />
 
               {/* Charts */}
               <div className="space-y-5">
-                <ChartCard title="Net-Fund Position" subtitle="Leveraged Funds neto — sin el ruido de los demás grupos">
-                  <NetFundChart data={data} />
+                <ChartCard title="Dealer Intermediary" subtitle="Long, Short y Neto — bancos e intermediarios">
+                  <DealerChart data={data} />
                 </ChartCard>
 
-                <ChartCard title="Open Interest" subtitle="Total open contracts over time">
-                  <FinancialOIChart data={data} />
-                </ChartCard>
-
-                <ChartCard
-                  title="Net Positioning + Open Interest (vista combinada)"
-                  subtitle="Dealer, Asset Manager, Leveraged Funds, Other Reportables y Nonreportable vs Open Interest — click en la leyenda para mostrar/ocultar series"
-                >
-                  <FinancialNetPositioningChart data={data} />
-                </ChartCard>
-
-                <ChartCard title="Asset Manager Positions (detalle)" subtitle="Institutional money — long, short, and net">
+                <ChartCard title="Asset Manager" subtitle="Long, Short y Neto — institucional largo plazo">
                   <AssetManagerChart data={data} />
                 </ChartCard>
-                <ChartCard title="Dealer vs Leveraged Money Net (detalle)" subtitle="Dealer intermediary vs speculative hedge funds">
-                  <DealerLevMoneyChart data={data} />
+
+                <ChartCard title="Leveraged Funds (Non-Commercial / Funds)" subtitle="Long, Short y Neto — fondos especulativos">
+                  <LeveragedFundsChart data={data} />
+                </ChartCard>
+
+                <ChartCard title="Other Reportables" subtitle="Long, Short y Neto — otros grandes participantes">
+                  <OtherReportablesChart data={data} />
+                </ChartCard>
+
+                <ChartCard title="Posiciones Netas Combinadas" subtitle="Neto de los 5 grupos superpuesto — click en leyenda para mostrar/ocultar">
+                  <FinancialCombinedNetChart data={data} />
+                </ChartCard>
+
+                <ChartCard title="Open Interest" subtitle="Total de contratos abiertos">
+                  <FinancialOIChart data={data} />
                 </ChartCard>
               </div>
 
@@ -219,11 +220,7 @@ const FinancialDetailPage: NextPage<Props> = ({ marketName }) => {
 
 export const getServerSideProps: GetServerSideProps<Props> = async ({ params }) => {
   const name = params?.name as string;
-  return {
-    props: {
-      marketName: decodeURIComponent(name),
-    },
-  };
+  return { props: { marketName: decodeURIComponent(name) } };
 };
 
 export default FinancialDetailPage;

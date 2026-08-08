@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
-import type { CotRow } from "../../lib/types";
-import { formatDate } from "../../utils/format";
+import type { CotFinancialsRow } from "../../lib/types";
 
 const LS = { color: "#64748b", fontFamily: "JetBrains Mono, monospace", fontSize: 10 };
 const fmt = (v: number) => {
@@ -9,12 +8,12 @@ const fmt = (v: number) => {
   return a >= 1e6 ? `${s}${(a / 1e6).toFixed(1)}M` : a >= 1e3 ? `${s}${(a / 1e3).toFixed(0)}K` : String(v);
 };
 
-export default function ManagedMoneyChart({ data }: { data: CotRow[] }) {
+export default function DealerChart({ data }: { data: CotFinancialsRow[] }) {
   const option = useMemo(() => {
-    const dates  = data.map((r) => formatDate(r.as_of_date_in_form_yyyymmdd));
-    const longs  = data.map((r) => r.m_money_positions_long_all);
-    const shorts = data.map((r) => r.m_money_positions_short_all);
-    const nets   = data.map((r) => r.m_money_positions_long_all - r.m_money_positions_short_all);
+    const dates  = data.map((r) => r.as_of_date_in_form_yyyymmdd);
+    const longs  = data.map((r) => r.dealer_positions_long_all);
+    const shorts = data.map((r) => r.dealer_positions_short_all);
+    const nets   = data.map((r) => r.dealer_positions_long_all - r.dealer_positions_short_all);
     return {
       backgroundColor: "transparent",
       legend: {
@@ -60,10 +59,7 @@ export default function ManagedMoneyChart({ data }: { data: CotRow[] }) {
           },
         },
         { name: "Short", type: "line", data: shorts, smooth: 0.3, symbol: "none", lineStyle: { color: "#f43f5e", width: 2 } },
-        {
-          name: "Net", type: "bar", data: nets, barMaxWidth: 6,
-          itemStyle: { color: "#64748b", opacity: 0.7 },
-        },
+        { name: "Net", type: "bar", data: nets, barMaxWidth: 6, itemStyle: { color: "#64748b", opacity: 0.7 } },
       ],
     };
   }, [data]);

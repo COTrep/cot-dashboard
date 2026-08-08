@@ -9,12 +9,12 @@ const fmt = (v: number) => {
   return a >= 1e6 ? `${s}${(a / 1e6).toFixed(1)}M` : a >= 1e3 ? `${s}${(a / 1e3).toFixed(0)}K` : String(v);
 };
 
-export default function ManagedMoneyChart({ data }: { data: CotRow[] }) {
+export default function ProducerMerchantChart({ data }: { data: CotRow[] }) {
   const option = useMemo(() => {
     const dates  = data.map((r) => formatDate(r.as_of_date_in_form_yyyymmdd));
-    const longs  = data.map((r) => r.m_money_positions_long_all);
-    const shorts = data.map((r) => r.m_money_positions_short_all);
-    const nets   = data.map((r) => r.m_money_positions_long_all - r.m_money_positions_short_all);
+    const longs  = data.map((r) => r.prod_merc_positions_long_all);
+    const shorts = data.map((r) => r.prod_merc_positions_short_all);
+    const nets   = data.map((r) => r.prod_merc_positions_long_all - r.prod_merc_positions_short_all);
     return {
       backgroundColor: "transparent",
       legend: {
