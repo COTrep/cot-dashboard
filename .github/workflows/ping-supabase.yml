@@ -2,7 +2,7 @@ name: Ping Supabase (keep alive)
 
 on:
   schedule:
-    - cron: "0 8 */5 * *"   # cada 5 días a las 8:00 UTC
+    - cron: "0 8 */2 * *"   # cada 2 días a las 8:00 UTC (Supabase pausa a los 7 días)
   workflow_dispatch:         # también permite ejecutarlo manualmente
 
 jobs:
