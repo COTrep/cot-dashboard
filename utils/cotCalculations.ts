@@ -142,3 +142,37 @@ export function cotIndexLabel(index: number | null): string {
   if (index <= 30) return "Bearish";
   return "Neutral";
 }
+
+/**
+ * Rolling MA ± k×SD bands over a given window.
+ * Returns null for the first (window-1) points where history is insufficient.
+ * Default: 156-week window (3 years, per Upperman), k=2.0 (~95% distribution).
+ * Document in UI as "UCL/LCL · 156wk · k SD" — not Upperman's exact proprietary parameter.
+ */
+export function calcUclLcl(
+  values: number[],
+  window: number = 156,
+  k: number = 2.0
+): { ucl: (number | null)[]; lcl: (number | null)[]; ma: (number | null)[] } {
+  const ucl: (number | null)[] = [];
+  const lcl: (number | null)[] = [];
+  const ma: (number | null)[] = [];
+
+  for (let i = 0; i < values.length; i++) {
+    if (i < window - 1) {
+      ucl.push(null);
+      lcl.push(null);
+      ma.push(null);
+      continue;
+    }
+    const slice = values.slice(i - window + 1, i + 1);
+    const mean = slice.reduce((a, b) => a + b, 0) / window;
+    const variance = slice.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / window;
+    const sd = Math.sqrt(variance);
+    ucl.push(mean + k * sd);
+    lcl.push(mean - k * sd);
+    ma.push(mean);
+  }
+
+  return { ucl, lcl, ma };
+}

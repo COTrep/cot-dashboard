@@ -17,6 +17,7 @@ import type { CotRow } from "../../lib/types";
 import {
   processRawCotData,
   buildCotSummary,
+  calcUclLcl,
   fmtNumber,
   fmtChange,
   signalColor,
@@ -203,6 +204,31 @@ const CommodityAnalysisPage: NextPage = () => {
     [processed]
   );
 
+  // UCL/LCL signal for Upperman IMPA Step 1 banner.
+  // Uses combined commercial net (prod_merc + swap) to match CommercialCombinedChart.
+  // Fixed k=2.0 (standard parameter documented in UI); chart has its own k selector.
+  const uclLclSignal = useMemo((): "bullish" | "bearish" | null => {
+    if (!data.length) return null;
+    const sorted = [...data].sort((a, b) =>
+      a.as_of_date_in_form_yyyymmdd.localeCompare(b.as_of_date_in_form_yyyymmdd)
+    );
+    const nets = sorted.map(
+      (r) =>
+        r.prod_merc_positions_long_all +
+        r.swap_positions_long_all -
+        r.prod_merc_positions_short_all -
+        r.swap_positions_short_all
+    );
+    const { ucl, lcl } = calcUclLcl(nets, 156, 2.0);
+    const n = nets.length - 1;
+    const latestUcl = ucl[n];
+    const latestLcl = lcl[n];
+    if (latestUcl === null || latestLcl === null) return null;
+    if (nets[n] > latestUcl) return "bullish";
+    if (nets[n] < latestLcl) return "bearish";
+    return null;
+  }, [data]);
+
   // ─── Render ─────────────────────────────────────────────────────────────────
 
   const title = commodityName
@@ -333,7 +359,38 @@ const CommodityAnalysisPage: NextPage = () => {
                     />
                   </div>
 
-                  {/* ── Signal banner ── */}
+                  {/* ── UCL/LCL signal banner — Upperman IMPA Step 1 ── */}
+                  {uclLclSignal && (
+                    <div
+                      className={`mb-3 rounded-xl border px-5 py-3 flex items-center gap-3 text-sm ${
+                        uclLclSignal === "bullish"
+                          ? "bg-emerald-950/40 border-emerald-800 text-emerald-300"
+                          : "bg-rose-950/40 border-rose-800 text-rose-300"
+                      }`}
+                    >
+                      <span className="text-lg">
+                        {uclLclSignal === "bullish" ? "🟢" : "🔴"}
+                      </span>
+                      <div>
+                        <span className="font-semibold">
+                          {uclLclSignal === "bullish"
+                            ? "Commercial Net above UCL"
+                            : "Commercial Net below LCL"}
+                        </span>
+                        {" — "}
+                        <span className="opacity-80">
+                          {uclLclSignal === "bullish"
+                            ? "Bullish setup (Upperman IMPA Step 1)"
+                            : "Bearish setup (Upperman IMPA Step 1)"}
+                        </span>
+                        <span className="ml-2 text-[11px] font-mono opacity-50">
+                          UCL/LCL · 156wk · 2.0 SD
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── COT Index signal banner — secondary indicator ── */}
                   {summary?.cotIndex !== null && summary?.cotIndex !== undefined && (
                     <div
                       className={`mb-6 rounded-xl border px-5 py-3 flex items-center gap-3 text-sm ${

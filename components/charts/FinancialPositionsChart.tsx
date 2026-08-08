@@ -1,6 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotFinancialsRow } from "../../lib/types";
+import { calcUclLcl } from "../../utils/cotCalculations";
 
 interface Props {
   data: CotFinancialsRow[];
@@ -136,26 +137,56 @@ export function AssetManagerChart({ data }: Props) {
   return <ReactECharts option={option} style={{ height: "300px", width: "100%" }} opts={{ renderer: "canvas" }} />;
 }
 
-/** Net-Fund Position: Leveraged Funds net, sin los demás grupos */
+const K_OPTIONS = [1.0, 1.5, 2.0, 2.5, 3.0];
+
+const fmtAbsFin = (v: number) => {
+  const abs = Math.abs(v);
+  if (abs >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${(v / 1_000).toFixed(0)}K`;
+  return String(v);
+};
+
+/** Net-Fund Position: Leveraged Funds net, con bandas UCL/LCL */
 export function NetFundChart({ data }: Props) {
+  const [k, setK] = useState(2.0);
+
   const option = useMemo(() => {
     const net = data.map(
       (r) => r.lev_money_positions_long_all - r.lev_money_positions_short_all
     );
 
+    const { ucl, lcl } = calcUclLcl(net, 156, k);
+
     return {
       backgroundColor: "transparent",
+      legend: {
+        data: ["Leveraged Funds Net", "UCL", "LCL"],
+        textStyle: { color: "#94a3b8", fontFamily: "JetBrains Mono, monospace", fontSize: 10 },
+        top: 0,
+        right: 0,
+        itemWidth: 14,
+        itemHeight: 8,
+      },
       tooltip: {
         trigger: "axis",
         backgroundColor: "#1e293b",
         borderColor: "#334155",
         textStyle: { color: "#e2e8f0", fontFamily: "JetBrains Mono, monospace", fontSize: 11 },
         formatter: (params: any[]) => {
-          const p = params[0];
-          return `<div style="font-weight:600">${p.axisValue}</div><div>${Number(p.value).toLocaleString()}</div>`;
+          const date = params[0]?.axisValue ?? "";
+          let html = `<div style="font-weight:600;margin-bottom:4px">${date}</div>`;
+          for (const p of params) {
+            if (p.value == null) continue;
+            const color = p.seriesName === "Leveraged Funds Net" ? "#0ea5e9" : "#fb923c";
+            html += `<div style="display:flex;justify-content:space-between;gap:20px">
+              <span style="color:#94a3b8">${p.seriesName}</span>
+              <span style="color:${color};font-weight:600">${fmtAbsFin(p.value)}</span>
+            </div>`;
+          }
+          return html;
         },
       },
-      grid: { left: 60, right: 20, top: 20, bottom: 50 },
+      grid: { left: 60, right: 20, top: 30, bottom: 50 },
       xAxis: {
         type: "category",
         data: data.map((r) => r.as_of_date_in_form_yyyymmdd),
@@ -190,11 +221,54 @@ export function NetFundChart({ data }: Props) {
             },
           },
         },
+        {
+          name: "UCL",
+          type: "line",
+          data: ucl,
+          smooth: 0.2,
+          symbol: "none",
+          lineStyle: { color: "#fb923c", width: 1.5, type: "dashed" },
+          connectNulls: false,
+        },
+        {
+          name: "LCL",
+          type: "line",
+          data: lcl,
+          smooth: 0.2,
+          symbol: "none",
+          lineStyle: { color: "#fb923c", width: 1.5, type: "dashed" },
+          connectNulls: false,
+        },
       ],
     };
-  }, [data]);
+  }, [data, k]);
 
-  return <ReactECharts option={option} style={{ height: "300px", width: "100%" }} opts={{ renderer: "canvas" }} />;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2 px-1">
+        <span className="text-[11px] font-mono text-slate-500">
+          UCL/LCL · 156wk · {k.toFixed(1)} SD
+        </span>
+        <div className="flex items-center gap-1">
+          <span className="text-[11px] font-mono text-slate-600 mr-0.5">k =</span>
+          {K_OPTIONS.map((v) => (
+            <button
+              key={v}
+              onClick={() => setK(v)}
+              className={`text-[11px] font-mono px-1.5 py-0.5 rounded border transition-colors ${
+                k === v
+                  ? "bg-orange-900/40 text-orange-300 border-orange-700"
+                  : "text-slate-500 border-slate-800 hover:border-slate-600 hover:text-slate-300"
+              }`}
+            >
+              {v.toFixed(1)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <ReactECharts option={option} style={{ height: "300px", width: "100%" }} opts={{ renderer: "canvas" }} />
+    </div>
+  );
 }
 
 /** Vista combinada: los 5 grupos TFF (Dealer, Asset Manager, Leveraged Funds, Other Reportables, Nonreportable) + Open Interest superpuesto. Leyenda toggleable (click para mostrar/ocultar cada serie). */
