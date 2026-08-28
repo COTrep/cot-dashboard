@@ -34,6 +34,7 @@ export default function FinancialCombinedNetChart({ data }: { data: CotFinancial
     const levMoneyNet  = data.map((r) => r.lev_money_positions_long_all - r.lev_money_positions_short_all);
     const otherReptNet = data.map((r) => r.other_rept_positions_long_all - r.other_rept_positions_short_all);
     const nonreptNet   = data.map((r) => r.nonrept_positions_long_all - r.nonrept_positions_short_all);
+    const dzStart = data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0;
 
     return {
       backgroundColor: "transparent",
@@ -56,11 +57,11 @@ export default function FinancialCombinedNetChart({ data }: { data: CotFinancial
           return html;
         },
       },
-      grid: { left: 60, right: 20, top: 36, bottom: 50 },
+      grid: { left: 60, right: 20, top: 36, bottom: 85 },
       xAxis: {
         type: "category", data: dates,
         axisLine: { lineStyle: { color: "#334155" } },
-        axisLabel: { ...LS, rotate: 30, interval: Math.floor(dates.length / 8) },
+        axisLabel: { ...LS, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
@@ -68,6 +69,10 @@ export default function FinancialCombinedNetChart({ data }: { data: CotFinancial
         axisLabel: { ...LS, formatter: fmt },
         splitLine: { lineStyle: { color: "#1e293b" } },
       },
+      dataZoom: [
+        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#334155", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#64748b", fontSize: 9 }, showDetail: false },
+        { type: "inside", start: dzStart, end: 100 },
+      ],
       series: [
         {
           name: "Dealer Net", type: "line", data: dealerNet, smooth: 0.3, symbol: "none",

@@ -2,26 +2,53 @@ name: Ping Supabase (keep alive)
 
 on:
   schedule:
-    - cron: "0 8 */2 * *"   # cada 2 días a las 8:00 UTC (Supabase pausa a los 7 días)
-  workflow_dispatch:         # también permite ejecutarlo manualmente
+    - cron: "0 8 * * *"   # diario a las 8:00 UTC (Supabase pausa tras 7 días de inactividad)
+  workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Ping Supabase
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_MGMT_TOKEN: ${{ secrets.SUPABASE_MGMT_TOKEN }}
         run: |
-          ANON_KEY="sb_publishable_8ZtiY2Hp9sYD9pwxRKEIsg_kfIafdg5"
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://jvybembfdefoqnnjnuhq.supabase.co/rest/v1/cot_weekly_raw?select=report_date_as_mm_dd_yyyy&limit=1" \
-            -H "apikey: $ANON_KEY" \
-            -H "Authorization: Bearer $ANON_KEY")
+          PROJECT_REF="jvybembfdefoqnnjnuhq"
+          URL="https://${PROJECT_REF}.supabase.co/rest/v1/cot_weekly_raw?select=report_date_as_mm_dd_yyyy&limit=1"
 
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$URL" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
           echo "HTTP status: $RESPONSE"
 
-          if [ "$RESPONSE" != "200" ]; then
-            echo "ERROR: Supabase no respondió correctamente (status $RESPONSE)"
+          if [ "$RESPONSE" = "200" ]; then
+            echo "OK: Supabase activo"
+            exit 0
+          fi
+
+          echo "WARN: Supabase no respondió (status $RESPONSE) — intentando restaurar..."
+
+          if [ -z "$SUPABASE_MGMT_TOKEN" ]; then
+            echo "ERROR: SUPABASE_MGMT_TOKEN no configurado, no se puede restaurar"
             exit 1
           fi
 
-          echo "OK: Supabase activo"
+          curl -s -X POST "https://api.supabase.com/v1/projects/${PROJECT_REF}/restore" \
+            -H "Authorization: Bearer $SUPABASE_MGMT_TOKEN" \
+            -H "Content-Type: application/json" || true
+
+          echo "Esperando 120s para que el proyecto se restaure..."
+          sleep 120
+
+          RESPONSE2=$(curl -s -o /dev/null -w "%{http_code}" "$URL" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "HTTP status post-restore: $RESPONSE2"
+
+          if [ "$RESPONSE2" = "200" ]; then
+            echo "OK: Supabase restaurado exitosamente"
+          else
+            echo "ERROR: Supabase sigue sin responder tras restauración (status $RESPONSE2)"
+            exit 1
+          fi

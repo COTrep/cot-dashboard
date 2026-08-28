@@ -7,12 +7,20 @@ export default function Login() {
   const [error, setError] = useState("");
   const router = useRouter();
 
-  const handleLogin = () => {
-    if (user === "admin" && pass === "COT3007_2206") {
-      sessionStorage.setItem("cot_auth", "true");
-      router.push("/");
-    } else {
-      setError("Usuario o contraseña incorrectos");
+  const handleLogin = async () => {
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user, pass }),
+      });
+      if (res.ok) {
+        router.push("/");
+      } else {
+        setError("Usuario o contraseña incorrectos");
+      }
+    } catch {
+      setError("Error de conexión");
     }
   };
 

@@ -11,6 +11,7 @@ export default function OpenInterestChart({ data }: Props) {
   const option = useMemo(() => {
     const dates = data.map((r) => formatDate(r.as_of_date_in_form_yyyymmdd));
     const values = data.map((r) => r.open_interest_all);
+    const dzStart = data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0;
 
     return {
       backgroundColor: "transparent",
@@ -24,7 +25,7 @@ export default function OpenInterestChart({ data }: Props) {
           return `<div style="font-weight:600">${p.axisValue}</div><div>${Number(p.value).toLocaleString()}</div>`;
         },
       },
-      grid: { left: 60, right: 20, top: 20, bottom: 50 },
+      grid: { left: 60, right: 20, top: 20, bottom: 85 },
       xAxis: {
         type: "category",
         data: dates,
@@ -34,7 +35,7 @@ export default function OpenInterestChart({ data }: Props) {
           fontFamily: "JetBrains Mono, monospace",
           fontSize: 10,
           rotate: 30,
-          interval: Math.floor(dates.length / 8),
+          interval: "auto",
         },
         splitLine: { show: false },
       },
@@ -51,6 +52,10 @@ export default function OpenInterestChart({ data }: Props) {
         },
         splitLine: { lineStyle: { color: "#1e293b" } },
       },
+      dataZoom: [
+        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#334155", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#64748b", fontSize: 9 }, showDetail: false },
+        { type: "inside", start: dzStart, end: 100 },
+      ],
       series: [
         {
           name: "Open Interest",

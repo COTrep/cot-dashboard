@@ -6,12 +6,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [auth, setAuth] = useState(false);
 
   useEffect(() => {
-    const ok = sessionStorage.getItem("cot_auth") === "true";
-    if (!ok && router.pathname !== "/login") {
-      router.replace("/login");
-    } else {
+    if (router.pathname === "/login") {
       setAuth(true);
+      return;
     }
+    fetch("/api/check")
+      .then((r) => {
+        if (r.ok) setAuth(true);
+        else router.replace("/login");
+      })
+      .catch(() => router.replace("/login"));
   }, [router]);
 
   if (!auth) return null;
