@@ -32,7 +32,7 @@ export async function fetchCommodityData(
   });
 
   if (error) throw new Error(error.message);
-  return (data ?? []) as CotRow[];
+  return ((data ?? []) as CotRow[]).reverse();
 }
 
 /** Fetch latest row per commodity — uses RPC (DISTINCT ON) to bypass PostgREST row cap */
@@ -88,5 +88,5 @@ export async function fetchFinancialData(
   });
 
   if (error) throw new Error(error.message);
-  return (data ?? []) as CotFinancialsRow[];
+  return ((data ?? []) as CotFinancialsRow[]).reverse();
 }
