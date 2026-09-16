@@ -6,11 +6,11 @@ const LS = { color: "#64748b", fontFamily: "JetBrains Mono, monospace", fontSize
 const fmt = (v: number) =>
   v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : String(v);
 
-export default function FinancialOIChart({ data }: { data: CotFinancialsRow[] }) {
+export default function FinancialOIChart({ data, start }: { data: CotFinancialsRow[]; start?: number }) {
   const option = useMemo(() => {
     const dates  = data.map((r) => r.as_of_date_in_form_yyyymmdd);
     const values = data.map((r) => r.open_interest_all);
-    const dzStart = data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0;
+    const dzStart = start ?? (data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0);
     return {
       backgroundColor: "transparent",
       tooltip: {
@@ -48,6 +48,6 @@ export default function FinancialOIChart({ data }: { data: CotFinancialsRow[] })
         },
       }],
     };
-  }, [data]);
+  }, [data, start]);
   return <ReactECharts option={option} style={{ height: "300px", width: "100%" }} opts={{ renderer: "canvas" }} />;
 }

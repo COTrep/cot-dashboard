@@ -8,13 +8,13 @@ const fmt = (v: number) => {
   return a >= 1e6 ? `${s}${(a / 1e6).toFixed(1)}M` : a >= 1e3 ? `${s}${(a / 1e3).toFixed(0)}K` : String(v);
 };
 
-export default function LeveragedFundsChart({ data }: { data: CotFinancialsRow[] }) {
+export default function LeveragedFundsChart({ data, start }: { data: CotFinancialsRow[]; start?: number }) {
   const option = useMemo(() => {
     const dates  = data.map((r) => r.as_of_date_in_form_yyyymmdd);
     const longs  = data.map((r) => r.lev_money_positions_long_all);
     const shorts = data.map((r) => r.lev_money_positions_short_all);
     const nets   = data.map((r) => r.lev_money_positions_long_all - r.lev_money_positions_short_all);
-    const dzStart = data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0;
+    const dzStart = start ?? (data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0);
     return {
       backgroundColor: "transparent",
       legend: {
@@ -67,6 +67,6 @@ export default function LeveragedFundsChart({ data }: { data: CotFinancialsRow[]
         { name: "Net", type: "bar", data: nets, barMaxWidth: 6, itemStyle: { color: "#64748b", opacity: 0.7 } },
       ],
     };
-  }, [data]);
+  }, [data, start]);
   return <ReactECharts option={option} style={{ height: "300px", width: "100%" }} opts={{ renderer: "canvas" }} />;
 }

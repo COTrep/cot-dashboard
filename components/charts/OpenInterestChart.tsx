@@ -7,11 +7,11 @@ interface Props {
   data: CotRow[];
 }
 
-export default function OpenInterestChart({ data }: Props) {
+export default function OpenInterestChart({ data, start }: Props & { start?: number }) {
   const option = useMemo(() => {
     const dates = data.map((r) => formatDate(r.as_of_date_in_form_yyyymmdd));
     const values = data.map((r) => r.open_interest_all);
-    const dzStart = data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0;
+    const dzStart = start ?? (data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0);
 
     return {
       backgroundColor: "transparent",
@@ -77,7 +77,7 @@ export default function OpenInterestChart({ data }: Props) {
         },
       ],
     };
-  }, [data]);
+  }, [data, start]);
 
   return (
     <ReactECharts

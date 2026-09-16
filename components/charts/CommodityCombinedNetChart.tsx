@@ -16,13 +16,13 @@ const COLORS = {
 };
 
 /** 3 net lines: Producer/Merchant, Swap Dealers, Managed Money. All visible by default, legend toggleable. */
-export default function CommodityCombinedNetChart({ data }: { data: CotRow[] }) {
+export default function CommodityCombinedNetChart({ data, start }: { data: CotRow[]; start?: number }) {
   const option = useMemo(() => {
     const dates       = data.map((r) => formatDate(r.as_of_date_in_form_yyyymmdd));
     const prodMercNet = data.map((r) => r.prod_merc_positions_long_all - r.prod_merc_positions_short_all);
     const swapNet     = data.map((r) => r.swap_positions_long_all - r.swap_positions_short_all);
     const mMoneyNet   = data.map((r) => r.m_money_positions_long_all - r.m_money_positions_short_all);
-    const dzStart = data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0;
+    const dzStart = start ?? (data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0);
 
     return {
       backgroundColor: "transparent",
@@ -81,6 +81,6 @@ export default function CommodityCombinedNetChart({ data }: { data: CotRow[] }) 
         { name: "Managed Money Net", type: "line", data: mMoneyNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.mMoney, width: 2 } },
       ],
     };
-  }, [data]);
+  }, [data, start]);
   return <ReactECharts option={option} style={{ height: "300px", width: "100%" }} opts={{ renderer: "canvas" }} />;
 }

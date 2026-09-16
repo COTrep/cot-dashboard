@@ -26,7 +26,7 @@ const COLOR_MAP: Record<string, string> = {
 };
 
 /** 5 net lines: Dealer, Asset Manager, Leveraged Funds, Other Reportables, Nonreportable. All visible by default, legend toggleable. */
-export default function FinancialCombinedNetChart({ data }: { data: CotFinancialsRow[] }) {
+export default function FinancialCombinedNetChart({ data, start }: { data: CotFinancialsRow[]; start?: number }) {
   const option = useMemo(() => {
     const dates        = data.map((r) => r.as_of_date_in_form_yyyymmdd);
     const dealerNet    = data.map((r) => r.dealer_positions_long_all - r.dealer_positions_short_all);
@@ -34,7 +34,7 @@ export default function FinancialCombinedNetChart({ data }: { data: CotFinancial
     const levMoneyNet  = data.map((r) => r.lev_money_positions_long_all - r.lev_money_positions_short_all);
     const otherReptNet = data.map((r) => r.other_rept_positions_long_all - r.other_rept_positions_short_all);
     const nonreptNet   = data.map((r) => r.nonrept_positions_long_all - r.nonrept_positions_short_all);
-    const dzStart = data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0;
+    const dzStart = start ?? (data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0);
 
     return {
       backgroundColor: "transparent",
@@ -90,6 +90,6 @@ export default function FinancialCombinedNetChart({ data }: { data: CotFinancial
         { name: "Nonreportable Net", type: "line", data: nonreptNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.nonrept, width: 2 } },
       ],
     };
-  }, [data]);
+  }, [data, start]);
   return <ReactECharts option={option} style={{ height: "320px", width: "100%" }} opts={{ renderer: "canvas" }} />;
 }

@@ -61,6 +61,8 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
   const [error, setError] = useState<string | null>(null);
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [filterVersion, setFilterVersion] = useState(0);
+  const chartStart = filterVersion > 0 ? 0 : undefined;
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -102,9 +104,9 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
             <FilterBar
               dateFrom={dateFrom}
               dateTo={dateTo}
-              onDateFromChange={setDateFrom}
-              onDateToChange={setDateTo}
-              onReset={() => { setDateFrom(""); setDateTo(""); }}
+              onDateFromChange={(v) => { setDateFrom(v); setFilterVersion(n => n + 1); }}
+              onDateToChange={(v) => { setDateTo(v); setFilterVersion(n => n + 1); }}
+              onReset={() => { setDateFrom(""); setDateTo(""); setFilterVersion(n => n + 1); }}
             />
             <ExportButtons rows={data} filenameBase={`cot_${commodityName.slice(0, 30)}`} />
           </div>
@@ -135,23 +137,23 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
               {/* Charts */}
               <div className="space-y-5">
                 <ChartCard title="Producer/Merchant (Commercials)" subtitle="Long, Short y Neto — hedgers institucionales">
-                  <ProducerMerchantChart data={data} />
+                  <ProducerMerchantChart key={filterVersion} data={data} start={chartStart} />
                 </ChartCard>
 
                 <ChartCard title="Swap Dealers (parte de Commercials)" subtitle="Long, Short y Neto — intermediarios de swap">
-                  <SwapDealersChart data={data} />
+                  <SwapDealersChart key={filterVersion} data={data} start={chartStart} />
                 </ChartCard>
 
                 <ChartCard title="Managed Money (Non-Commercial / Funds)" subtitle="Long, Short y Neto — fondos especulativos">
-                  <ManagedMoneyChart data={data} />
+                  <ManagedMoneyChart key={filterVersion} data={data} start={chartStart} />
                 </ChartCard>
 
                 <ChartCard title="Posiciones Netas Combinadas" subtitle="Neto de cada grupo superpuesto — click en leyenda para mostrar/ocultar">
-                  <CommodityCombinedNetChart data={data} />
+                  <CommodityCombinedNetChart key={filterVersion} data={data} start={chartStart} />
                 </ChartCard>
 
                 <ChartCard title="Open Interest" subtitle="Total de contratos abiertos">
-                  <OpenInterestChart data={data} />
+                  <OpenInterestChart key={filterVersion} data={data} start={chartStart} />
                 </ChartCard>
               </div>
 
