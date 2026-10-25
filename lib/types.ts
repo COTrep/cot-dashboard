@@ -9,7 +9,19 @@ export interface CotRow {
   swap_positions_short_all: number;
   m_money_positions_long_all: number;
   m_money_positions_short_all: number;
+  other_rept_positions_long_all: number;
+  other_rept_positions_short_all: number;
+  nonrept_positions_long_all: number;
+  nonrept_positions_short_all: number;
   traders_tot_all: number;
+  traders_prod_merc_long_all: number;
+  traders_prod_merc_short_all: number;
+  traders_swap_long_all: number;
+  traders_swap_short_all: number;
+  traders_m_money_long_all: number;
+  traders_m_money_short_all: number;
+  traders_other_rept_long_all: number;
+  traders_other_rept_short_all: number;
 }
 
 export interface CotFinancialsRow {

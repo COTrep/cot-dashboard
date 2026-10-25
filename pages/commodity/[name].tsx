@@ -23,6 +23,18 @@ const ManagedMoneyChart = dynamic(
   () => import("../../components/charts/ManagedMoneyChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
 );
+const CommodityOtherReportablesChart = dynamic(
+  () => import("../../components/charts/CommodityOtherReportablesChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const CommodityNonreportableChart = dynamic(
+  () => import("../../components/charts/CommodityNonreportableChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
+const TradersBreakdownChart = dynamic(
+  () => import("../../components/charts/TradersBreakdownChart"),
+  { ssr: false, loading: () => <ChartSkeleton /> }
+);
 const CommodityCombinedNetChart = dynamic(
   () => import("../../components/charts/CommodityCombinedNetChart"),
   { ssr: false, loading: () => <ChartSkeleton /> }
@@ -146,6 +158,18 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
 
                 <ChartCard title="Managed Money (Non-Commercial / Funds)" subtitle="Long, Short y Neto — fondos especulativos">
                   <ManagedMoneyChart key={filterVersion} data={data} start={chartStart} />
+                </ChartCard>
+
+                <ChartCard title="Other Reportables" subtitle="Long, Short y Neto — otros reportables (no commercials, no MM)">
+                  <CommodityOtherReportablesChart key={filterVersion} data={data} start={chartStart} />
+                </ChartCard>
+
+                <ChartCard title="Non-Reportable" subtitle="Long, Short y Neto — posiciones no reportables (pequeños especuladores)">
+                  <CommodityNonreportableChart key={filterVersion} data={data} start={chartStart} />
+                </ChartCard>
+
+                <ChartCard title="Número de Traders por Categoría" subtitle="Participantes activos — máximo de long/short por grupo">
+                  <TradersBreakdownChart key={filterVersion} data={data} start={chartStart} />
                 </ChartCard>
 
                 <ChartCard title="Posiciones Netas Combinadas" subtitle="Neto de cada grupo superpuesto — click en leyenda para mostrar/ocultar">
