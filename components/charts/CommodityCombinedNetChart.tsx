@@ -13,21 +13,33 @@ const COLORS = {
   prodMerc: "#10b981",
   swap: "#f59e0b",
   mMoney: "#38bdf8",
+  otherRept: "#fb923c",
+  nonRept: "#a78bfa",
 };
 
-/** 3 net lines: Producer/Merchant, Swap Dealers, Managed Money. All visible by default, legend toggleable. */
+/** 5 net lines: Producer/Merchant, Swap Dealers, Managed Money, Other Reportables, Non-Reportable. */
 export default function CommodityCombinedNetChart({ data, start }: { data: CotRow[]; start?: number }) {
   const option = useMemo(() => {
-    const dates       = data.map((r) => formatDate(r.as_of_date_in_form_yyyymmdd));
-    const prodMercNet = data.map((r) => r.prod_merc_positions_long_all - r.prod_merc_positions_short_all);
-    const swapNet     = data.map((r) => r.swap_positions_long_all - r.swap_positions_short_all);
-    const mMoneyNet   = data.map((r) => r.m_money_positions_long_all - r.m_money_positions_short_all);
+    const dates        = data.map((r) => formatDate(r.as_of_date_in_form_yyyymmdd));
+    const prodMercNet  = data.map((r) => r.prod_merc_positions_long_all - r.prod_merc_positions_short_all);
+    const swapNet      = data.map((r) => r.swap_positions_long_all - r.swap_positions_short_all);
+    const mMoneyNet    = data.map((r) => r.m_money_positions_long_all - r.m_money_positions_short_all);
+    const otherReptNet = data.map((r) =>
+      r.other_rept_positions_long_all != null && r.other_rept_positions_short_all != null
+        ? r.other_rept_positions_long_all - r.other_rept_positions_short_all
+        : null
+    );
+    const nonReptNet   = data.map((r) =>
+      r.nonrept_positions_long_all != null && r.nonrept_positions_short_all != null
+        ? r.nonrept_positions_long_all - r.nonrept_positions_short_all
+        : null
+    );
     const dzStart = start ?? (data.length > 0 ? Math.max(0, Math.round((1 - Math.min(156, data.length) / data.length) * 100)) : 0);
 
     return {
       backgroundColor: "transparent",
       legend: {
-        data: ["Producer/Merchant Net", "Swap Dealers Net", "Managed Money Net"],
+        data: ["Producer/Merchant Net", "Swap Dealers Net", "Managed Money Net", "Other Reportables Net", "Non-Reportable Net"],
         textStyle: { color: "#94a3b8", fontFamily: "JetBrains Mono, monospace", fontSize: 10 },
         selectedMode: true,
         top: 0, right: 0, itemWidth: 14, itemHeight: 8,
@@ -43,8 +55,11 @@ export default function CommodityCombinedNetChart({ data, start }: { data: CotRo
             "Producer/Merchant Net": COLORS.prodMerc,
             "Swap Dealers Net": COLORS.swap,
             "Managed Money Net": COLORS.mMoney,
+            "Other Reportables Net": COLORS.otherRept,
+            "Non-Reportable Net": COLORS.nonRept,
           };
           for (const p of params) {
+            if (p.value == null) continue;
             html += `<div style="display:flex;justify-content:space-between;gap:20px"><span style="color:#94a3b8">${p.seriesName}</span><span style="color:${colorMap[p.seriesName]};font-weight:600">${fmt(p.value)}</span></div>`;
           }
           return html;
@@ -77,8 +92,10 @@ export default function CommodityCombinedNetChart({ data, start }: { data: CotRo
             label: { show: false },
           },
         },
-        { name: "Swap Dealers Net", type: "line", data: swapNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.swap, width: 2 } },
-        { name: "Managed Money Net", type: "line", data: mMoneyNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.mMoney, width: 2 } },
+        { name: "Swap Dealers Net",       type: "line", data: swapNet,      smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.swap,      width: 2 } },
+        { name: "Managed Money Net",      type: "line", data: mMoneyNet,    smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.mMoney,    width: 2 } },
+        { name: "Other Reportables Net",  type: "line", data: otherReptNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.otherRept, width: 2 } },
+        { name: "Non-Reportable Net",     type: "line", data: nonReptNet,   smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.nonRept,   width: 2 } },
       ],
     };
   }, [data, start]);
