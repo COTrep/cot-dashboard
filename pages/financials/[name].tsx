@@ -6,6 +6,7 @@ import Layout from "../../components/Layout";
 import FilterBar from "../../components/FilterBar";
 import ExportButtons from "../../components/ExportButtons";
 import LegacyEquivalencePanel from "../../components/charts/LegacyEquivalencePanel";
+import ChartCard from "../../components/ChartCard";
 import { ChartSkeleton, Spinner } from "../../components/ui/Skeletons";
 import { fetchFinancialData } from "../../lib/queries";
 import { formatNumber } from "../../utils/format";
@@ -47,17 +48,6 @@ function StatBadge({ label, value, color }: { label: string; value: number; colo
   );
 }
 
-function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-surface-900 border border-surface-800 rounded-xl p-5">
-      <div className="mb-4">
-        <h2 className="font-display font-semibold text-white text-base">{title}</h2>
-        {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
-      </div>
-      {children}
-    </div>
-  );
-}
 
 const FinancialDetailPage: NextPage<Props> = ({ marketName }) => {
   const [data, setData] = useState<CotFinancialsRow[]>([]);
@@ -66,7 +56,6 @@ const FinancialDetailPage: NextPage<Props> = ({ marketName }) => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [filterVersion, setFilterVersion] = useState(0);
-  const chartStart = filterVersion > 0 ? 0 : undefined;
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -81,6 +70,7 @@ const FinancialDetailPage: NextPage<Props> = ({ marketName }) => {
 
   const latest = data[data.length - 1];
 
+  const dataLength = data.length;
   const dealerNet   = latest ? latest.dealer_positions_long_all - latest.dealer_positions_short_all : 0;
   const assetMgrNet = latest ? latest.asset_mgr_positions_long_all - latest.asset_mgr_positions_short_all : 0;
   const levMoneyNet = latest ? latest.lev_money_positions_long_all - latest.lev_money_positions_short_all : 0;
@@ -147,28 +137,40 @@ const FinancialDetailPage: NextPage<Props> = ({ marketName }) => {
 
               {/* Charts */}
               <div className="space-y-5">
-                <ChartCard title="Dealer Intermediary" subtitle="Long, Short y Neto — bancos e intermediarios">
-                  <DealerChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Dealer Intermediary" subtitle="Long, Short y Neto — bancos e intermediarios" showNetToggle dataLength={dataLength}>
+                  {({ dzStart, netOnly }) => (
+                    <DealerChart key={filterVersion} data={data} start={dzStart} netOnly={netOnly} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Asset Manager" subtitle="Long, Short y Neto — institucional largo plazo">
-                  <AssetManagerChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Asset Manager" subtitle="Long, Short y Neto — institucional largo plazo" showNetToggle dataLength={dataLength}>
+                  {({ dzStart, netOnly }) => (
+                    <AssetManagerChart key={filterVersion} data={data} start={dzStart} netOnly={netOnly} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Leveraged Funds (Non-Commercial / Funds)" subtitle="Long, Short y Neto — fondos especulativos">
-                  <LeveragedFundsChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Leveraged Funds (Non-Commercial / Funds)" subtitle="Long, Short y Neto — fondos especulativos" showNetToggle dataLength={dataLength}>
+                  {({ dzStart, netOnly }) => (
+                    <LeveragedFundsChart key={filterVersion} data={data} start={dzStart} netOnly={netOnly} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Other Reportables" subtitle="Long, Short y Neto — otros grandes participantes">
-                  <OtherReportablesChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Other Reportables" subtitle="Long, Short y Neto — otros grandes participantes" showNetToggle dataLength={dataLength}>
+                  {({ dzStart, netOnly }) => (
+                    <OtherReportablesChart key={filterVersion} data={data} start={dzStart} netOnly={netOnly} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Posiciones Netas Combinadas" subtitle="Neto de los 5 grupos superpuesto — click en leyenda para mostrar/ocultar">
-                  <FinancialCombinedNetChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Posiciones Netas Combinadas" subtitle="Neto de los 5 grupos superpuesto — click en leyenda para mostrar/ocultar" dataLength={dataLength}>
+                  {({ dzStart }) => (
+                    <FinancialCombinedNetChart key={filterVersion} data={data} start={dzStart} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Open Interest" subtitle="Total de contratos abiertos">
-                  <FinancialOIChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Open Interest" subtitle="Total de contratos abiertos" dataLength={dataLength}>
+                  {({ dzStart }) => (
+                    <FinancialOIChart key={filterVersion} data={data} start={dzStart} />
+                  )}
                 </ChartCard>
               </div>
 
