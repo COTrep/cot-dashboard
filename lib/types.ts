@@ -74,4 +74,6 @@ export interface CommoditySummary {
   managedMoneyLong: number;
   managedMoneyShort: number;
   latestDate: string;
+  /** Last 12 MM net values, most recent last. Optional — get_latest_commodities returns only 1 row; populate via a separate history RPC if needed. */
+  mmNetHistory?: number[];
 }
