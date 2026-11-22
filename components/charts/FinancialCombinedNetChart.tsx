@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotFinancialsRow } from "../../lib/types";
-import { CHART_TOOLTIP_STYLE, CHART_AXIS_LABEL } from "../../lib/chartTheme";
+import { CHART_COLORS, CHART_TOOLTIP_STYLE, CHART_AXIS_LABEL } from "../../lib/chartTheme";
 
 const fmt = (v: number) => {
   const a = Math.abs(v), s = v < 0 ? "-" : "";
@@ -9,11 +9,11 @@ const fmt = (v: number) => {
 };
 
 const COLORS = {
-  dealer: "#f59e0b",
-  assetMgr: "#10b981",
-  levMoney: "#0ea5e9",
-  otherRept: "#a78bfa",
-  nonrept: "#f43f5e",
+  dealer:    CHART_COLORS.swap.long,       // amber
+  assetMgr:  CHART_COLORS.prodMerc.long,  // cyan
+  levMoney:  CHART_COLORS.mMoney.long,    // violet
+  otherRept: CHART_COLORS.otherRept.long, // rose
+  nonrept:   CHART_COLORS.nonRept.long,   // green
 };
 
 const SERIES_NAMES = ["Dealer Net", "Asset Manager Net", "Leveraged Funds Net", "Other Reportables Net", "Nonreportable Net"] as const;
@@ -58,17 +58,17 @@ export default function FinancialCombinedNetChart({ data, start }: { data: CotFi
       grid: { left: 60, right: 20, top: 36, bottom: 85 },
       xAxis: {
         type: "category", data: dates,
-        axisLine: { lineStyle: { color: "#334155" } },
+        axisLine: { lineStyle: { color: "#252d3d" } },
         axisLabel: { ...CHART_AXIS_LABEL, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value", axisLine: { show: false }, axisTick: { show: false },
         axisLabel: { ...CHART_AXIS_LABEL, formatter: fmt },
-        splitLine: { lineStyle: { color: "#1e293b" } },
+        splitLine: { lineStyle: { color: "#252d3d" } },
       },
       dataZoom: [
-        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#334155", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#64748b", fontSize: 9 }, showDetail: false },
+        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#252d3d", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#3d4d6b", fontSize: 9 }, showDetail: false },
         { type: "inside", start: dzStart, end: 100 },
       ],
       series: [
@@ -78,14 +78,14 @@ export default function FinancialCombinedNetChart({ data, start }: { data: CotFi
           markLine: {
             silent: true, symbol: "none",
             data: [{ yAxis: 0 }],
-            lineStyle: { color: "#334155", type: "dashed", width: 1 },
+            lineStyle: { color: "#252d3d", type: "dashed", width: 1 },
             label: { show: false },
           },
         },
-        { name: "Asset Manager Net", type: "line", data: assetMgrNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.assetMgr, width: 2 } },
-        { name: "Leveraged Funds Net", type: "line", data: levMoneyNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.levMoney, width: 2 } },
-        { name: "Other Reportables Net", type: "line", data: otherReptNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.otherRept, width: 2 } },
-        { name: "Nonreportable Net", type: "line", data: nonreptNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.nonrept, width: 2 } },
+        { name: "Asset Manager Net",    type: "line", data: assetMgrNet,  smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.assetMgr,  width: 2 } },
+        { name: "Leveraged Funds Net",  type: "line", data: levMoneyNet,  smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.levMoney,  width: 2 } },
+        { name: "Other Reportables Net",type: "line", data: otherReptNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.otherRept, width: 2 } },
+        { name: "Nonreportable Net",    type: "line", data: nonreptNet,   smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.nonrept,   width: 2 } },
       ],
     };
   }, [data, start]);

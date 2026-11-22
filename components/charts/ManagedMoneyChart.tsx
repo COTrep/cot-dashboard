@@ -38,17 +38,17 @@ export default function ManagedMoneyChart({ data, start, netOnly }: { data: CotR
       grid: { left: 60, right: 20, top: 30, bottom: 85 },
       xAxis: {
         type: "category", data: dates,
-        axisLine: { lineStyle: { color: "#334155" } },
+        axisLine: { lineStyle: { color: "#252d3d" } },
         axisLabel: { ...CHART_AXIS_LABEL, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value", axisLine: { show: false }, axisTick: { show: false },
         axisLabel: { ...CHART_AXIS_LABEL, formatter: fmt },
-        splitLine: { lineStyle: { color: "#1e293b" } },
+        splitLine: { lineStyle: { color: "#252d3d" } },
       },
       dataZoom: [
-        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#334155", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#64748b", fontSize: 9 }, showDetail: false },
+        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#252d3d", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#3d4d6b", fontSize: 9 }, showDetail: false },
         { type: "inside", start: dzStart, end: 100 },
       ],
       series: [
@@ -59,7 +59,7 @@ export default function ManagedMoneyChart({ data, start, netOnly }: { data: CotR
             markLine: {
               silent: true, symbol: "none",
               data: [{ yAxis: 0 }],
-              lineStyle: { color: "#334155", type: "dashed", width: 1 },
+              lineStyle: { color: "#252d3d", type: "dashed", width: 1 },
               label: { show: false },
             },
           },
