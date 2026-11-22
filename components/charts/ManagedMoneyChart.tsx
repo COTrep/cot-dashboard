@@ -2,8 +2,8 @@ import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotRow } from "../../lib/types";
 import { formatDate } from "../../utils/format";
+import { CHART_COLORS, CHART_TOOLTIP_STYLE, CHART_AXIS_LABEL } from "../../lib/chartTheme";
 
-const LS = { color: "#64748b", fontFamily: "JetBrains Mono, monospace", fontSize: 10 };
 const fmt = (v: number) => {
   const a = Math.abs(v), s = v < 0 ? "-" : "";
   return a >= 1e6 ? `${s}${(a / 1e6).toFixed(1)}M` : a >= 1e3 ? `${s}${(a / 1e3).toFixed(0)}K` : String(v);
@@ -25,13 +25,11 @@ export default function ManagedMoneyChart({ data, start }: { data: CotRow[]; sta
       },
       tooltip: {
         trigger: "axis",
-        backgroundColor: "#1e293b",
-        borderColor: "#334155",
-        textStyle: { color: "#e2e8f0", fontFamily: "JetBrains Mono, monospace", fontSize: 11 },
+        ...CHART_TOOLTIP_STYLE,
         formatter: (params: any[]) => {
           let html = `<div style="font-weight:600;margin-bottom:4px">${params[0]?.axisValue}</div>`;
           for (const p of params) {
-            const c = p.seriesName === "Long" ? "#10b981" : p.seriesName === "Short" ? "#f43f5e" : "#94a3b8";
+            const c = p.seriesName === "Long" ? CHART_COLORS.mMoney.long : p.seriesName === "Short" ? CHART_COLORS.mMoney.short : CHART_COLORS.mMoney.net;
             html += `<div style="display:flex;justify-content:space-between;gap:20px"><span style="color:#94a3b8">${p.seriesName}</span><span style="color:${c};font-weight:600">${fmt(p.value)}</span></div>`;
           }
           return html;
@@ -41,12 +39,12 @@ export default function ManagedMoneyChart({ data, start }: { data: CotRow[]; sta
       xAxis: {
         type: "category", data: dates,
         axisLine: { lineStyle: { color: "#334155" } },
-        axisLabel: { ...LS, rotate: 30, interval: "auto" },
+        axisLabel: { ...CHART_AXIS_LABEL, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value", axisLine: { show: false }, axisTick: { show: false },
-        axisLabel: { ...LS, formatter: fmt },
+        axisLabel: { ...CHART_AXIS_LABEL, formatter: fmt },
         splitLine: { lineStyle: { color: "#1e293b" } },
       },
       dataZoom: [
@@ -56,7 +54,7 @@ export default function ManagedMoneyChart({ data, start }: { data: CotRow[]; sta
       series: [
         {
           name: "Long", type: "line", data: longs, smooth: 0.3, symbol: "none",
-          lineStyle: { color: "#10b981", width: 2 },
+          lineStyle: { color: CHART_COLORS.mMoney.long, width: 2 },
           markLine: {
             silent: true, symbol: "none",
             data: [{ yAxis: 0 }],
@@ -64,10 +62,10 @@ export default function ManagedMoneyChart({ data, start }: { data: CotRow[]; sta
             label: { show: false },
           },
         },
-        { name: "Short", type: "line", data: shorts, smooth: 0.3, symbol: "none", lineStyle: { color: "#f43f5e", width: 2 } },
+        { name: "Short", type: "line", data: shorts, smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.mMoney.short, width: 2 } },
         {
           name: "Net", type: "bar", data: nets, barMaxWidth: 6,
-          itemStyle: { color: "#64748b", opacity: 0.7 },
+          itemStyle: { color: CHART_COLORS.mMoney.net, opacity: 0.7 },
         },
       ],
     };

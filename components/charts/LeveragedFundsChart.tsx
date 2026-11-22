@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotFinancialsRow } from "../../lib/types";
+import { CHART_TOOLTIP_STYLE, CHART_AXIS_LABEL } from "../../lib/chartTheme";
 
-const LS = { color: "#64748b", fontFamily: "JetBrains Mono, monospace", fontSize: 10 };
 const fmt = (v: number) => {
   const a = Math.abs(v), s = v < 0 ? "-" : "";
   return a >= 1e6 ? `${s}${(a / 1e6).toFixed(1)}M` : a >= 1e3 ? `${s}${(a / 1e3).toFixed(0)}K` : String(v);
@@ -24,9 +24,7 @@ export default function LeveragedFundsChart({ data, start }: { data: CotFinancia
       },
       tooltip: {
         trigger: "axis",
-        backgroundColor: "#1e293b",
-        borderColor: "#334155",
-        textStyle: { color: "#e2e8f0", fontFamily: "JetBrains Mono, monospace", fontSize: 11 },
+        ...CHART_TOOLTIP_STYLE,
         formatter: (params: any[]) => {
           let html = `<div style="font-weight:600;margin-bottom:4px">${params[0]?.axisValue}</div>`;
           for (const p of params) {
@@ -40,12 +38,12 @@ export default function LeveragedFundsChart({ data, start }: { data: CotFinancia
       xAxis: {
         type: "category", data: dates,
         axisLine: { lineStyle: { color: "#334155" } },
-        axisLabel: { ...LS, rotate: 30, interval: "auto" },
+        axisLabel: { ...CHART_AXIS_LABEL, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value", axisLine: { show: false }, axisTick: { show: false },
-        axisLabel: { ...LS, formatter: fmt },
+        axisLabel: { ...CHART_AXIS_LABEL, formatter: fmt },
         splitLine: { lineStyle: { color: "#1e293b" } },
       },
       dataZoom: [

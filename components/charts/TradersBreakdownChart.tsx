@@ -2,8 +2,7 @@ import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotRow } from "../../lib/types";
 import { formatDate } from "../../utils/format";
-
-const LS = { color: "#64748b", fontFamily: "JetBrains Mono, monospace", fontSize: 10 };
+import { CHART_COLORS, CHART_TOOLTIP_STYLE, CHART_AXIS_LABEL } from "../../lib/chartTheme";
 
 export default function TradersBreakdownChart({ data, start }: { data: CotRow[]; start?: number }) {
   const option = useMemo(() => {
@@ -31,14 +30,15 @@ export default function TradersBreakdownChart({ data, start }: { data: CotRow[];
       },
       tooltip: {
         trigger: "axis",
-        backgroundColor: "#1e293b",
-        borderColor: "#334155",
-        textStyle: { color: "#e2e8f0", fontFamily: "JetBrains Mono, monospace", fontSize: 11 },
+        ...CHART_TOOLTIP_STYLE,
         formatter: (params: any[]) => {
           let html = `<div style="font-weight:600;margin-bottom:4px">${params[0]?.axisValue}</div>`;
           const colors: Record<string, string> = {
-            "Prod/Merc": "#f59e0b", "Swap": "#a78bfa", "Managed Money": "#38bdf8",
-            "Other Rept.": "#fb923c", "Total": "#94a3b8",
+            "Prod/Merc": CHART_COLORS.prodMerc.net,
+            "Swap": CHART_COLORS.swap.net,
+            "Managed Money": CHART_COLORS.mMoney.net,
+            "Other Rept.": CHART_COLORS.otherRept.net,
+            "Total": CHART_COLORS.oi,
           };
           for (const p of params) {
             if (p.value == null) continue;
@@ -52,12 +52,12 @@ export default function TradersBreakdownChart({ data, start }: { data: CotRow[];
       xAxis: {
         type: "category", data: dates,
         axisLine: { lineStyle: { color: "#334155" } },
-        axisLabel: { ...LS, rotate: 30, interval: "auto" },
+        axisLabel: { ...CHART_AXIS_LABEL, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value", axisLine: { show: false }, axisTick: { show: false },
-        axisLabel: { ...LS },
+        axisLabel: { ...CHART_AXIS_LABEL },
         splitLine: { lineStyle: { color: "#1e293b" } },
         minInterval: 1,
       },
@@ -66,11 +66,11 @@ export default function TradersBreakdownChart({ data, start }: { data: CotRow[];
         { type: "inside", start: dzStart, end: 100 },
       ],
       series: [
-        { name: "Prod/Merc",     type: "line", data: prodMerc,  smooth: 0.3, symbol: "none", lineStyle: { color: "#f59e0b", width: 2 } },
-        { name: "Swap",          type: "line", data: swap,      smooth: 0.3, symbol: "none", lineStyle: { color: "#a78bfa", width: 2 } },
-        { name: "Managed Money", type: "line", data: mMoney,    smooth: 0.3, symbol: "none", lineStyle: { color: "#38bdf8", width: 2 } },
-        { name: "Other Rept.",   type: "line", data: otherRept, smooth: 0.3, symbol: "none", lineStyle: { color: "#fb923c", width: 2 } },
-        { name: "Total",         type: "line", data: total,     smooth: 0.3, symbol: "none", lineStyle: { color: "#64748b", width: 1, type: "dashed" } },
+        { name: "Prod/Merc",     type: "line", data: prodMerc,  smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.prodMerc.net,  width: 2 } },
+        { name: "Swap",          type: "line", data: swap,      smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.swap.net,      width: 2 } },
+        { name: "Managed Money", type: "line", data: mMoney,    smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.mMoney.net,    width: 2 } },
+        { name: "Other Rept.",   type: "line", data: otherRept, smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.otherRept.net, width: 2 } },
+        { name: "Total",         type: "line", data: total,     smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.oi, width: 1, type: "dashed" } },
       ],
     };
   }, [data, start]);

@@ -2,19 +2,11 @@ import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotRow } from "../../lib/types";
 import { formatDate } from "../../utils/format";
+import { CHART_COLORS, CHART_TOOLTIP_STYLE, CHART_AXIS_LABEL } from "../../lib/chartTheme";
 
-const LS = { color: "#64748b", fontFamily: "JetBrains Mono, monospace", fontSize: 10 };
 const fmt = (v: number) => {
   const a = Math.abs(v), s = v < 0 ? "-" : "";
   return a >= 1e6 ? `${s}${(a / 1e6).toFixed(1)}M` : a >= 1e3 ? `${s}${(a / 1e3).toFixed(0)}K` : String(v);
-};
-
-const COLORS = {
-  prodMerc: "#10b981",
-  swap: "#f59e0b",
-  mMoney: "#38bdf8",
-  otherRept: "#fb923c",
-  nonRept: "#a78bfa",
 };
 
 /** 5 net lines: Producer/Merchant, Swap Dealers, Managed Money, Other Reportables, Non-Reportable. */
@@ -46,17 +38,15 @@ export default function CommodityCombinedNetChart({ data, start }: { data: CotRo
       },
       tooltip: {
         trigger: "axis",
-        backgroundColor: "#1e293b",
-        borderColor: "#334155",
-        textStyle: { color: "#e2e8f0", fontFamily: "JetBrains Mono, monospace", fontSize: 11 },
+        ...CHART_TOOLTIP_STYLE,
         formatter: (params: any[]) => {
           let html = `<div style="font-weight:600;margin-bottom:4px">${params[0]?.axisValue}</div>`;
           const colorMap: Record<string, string> = {
-            "Producer/Merchant Net": COLORS.prodMerc,
-            "Swap Dealers Net": COLORS.swap,
-            "Managed Money Net": COLORS.mMoney,
-            "Other Reportables Net": COLORS.otherRept,
-            "Non-Reportable Net": COLORS.nonRept,
+            "Producer/Merchant Net": CHART_COLORS.prodMerc.net,
+            "Swap Dealers Net":      CHART_COLORS.swap.net,
+            "Managed Money Net":     CHART_COLORS.mMoney.net,
+            "Other Reportables Net": CHART_COLORS.otherRept.net,
+            "Non-Reportable Net":    CHART_COLORS.nonRept.net,
           };
           for (const p of params) {
             if (p.value == null) continue;
@@ -69,12 +59,12 @@ export default function CommodityCombinedNetChart({ data, start }: { data: CotRo
       xAxis: {
         type: "category", data: dates,
         axisLine: { lineStyle: { color: "#334155" } },
-        axisLabel: { ...LS, rotate: 30, interval: "auto" },
+        axisLabel: { ...CHART_AXIS_LABEL, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value", axisLine: { show: false }, axisTick: { show: false },
-        axisLabel: { ...LS, formatter: fmt },
+        axisLabel: { ...CHART_AXIS_LABEL, formatter: fmt },
         splitLine: { lineStyle: { color: "#1e293b" } },
       },
       dataZoom: [
@@ -84,7 +74,7 @@ export default function CommodityCombinedNetChart({ data, start }: { data: CotRo
       series: [
         {
           name: "Producer/Merchant Net", type: "line", data: prodMercNet, smooth: 0.3, symbol: "none",
-          lineStyle: { color: COLORS.prodMerc, width: 2 },
+          lineStyle: { color: CHART_COLORS.prodMerc.net, width: 2 },
           markLine: {
             silent: true, symbol: "none",
             data: [{ yAxis: 0 }],
@@ -92,10 +82,10 @@ export default function CommodityCombinedNetChart({ data, start }: { data: CotRo
             label: { show: false },
           },
         },
-        { name: "Swap Dealers Net",       type: "line", data: swapNet,      smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.swap,      width: 2 } },
-        { name: "Managed Money Net",      type: "line", data: mMoneyNet,    smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.mMoney,    width: 2 } },
-        { name: "Other Reportables Net",  type: "line", data: otherReptNet, smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.otherRept, width: 2 } },
-        { name: "Non-Reportable Net",     type: "line", data: nonReptNet,   smooth: 0.3, symbol: "none", lineStyle: { color: COLORS.nonRept,   width: 2 } },
+        { name: "Swap Dealers Net",       type: "line", data: swapNet,      smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.swap.net,      width: 2 } },
+        { name: "Managed Money Net",      type: "line", data: mMoneyNet,    smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.mMoney.net,    width: 2 } },
+        { name: "Other Reportables Net",  type: "line", data: otherReptNet, smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.otherRept.net, width: 2 } },
+        { name: "Non-Reportable Net",     type: "line", data: nonReptNet,   smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.nonRept.net,   width: 2 } },
       ],
     };
   }, [data, start]);
