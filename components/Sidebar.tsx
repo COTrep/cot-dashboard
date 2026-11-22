@@ -17,6 +17,8 @@ interface Props {
   commodities: string[];
   selected?: string;
   loading?: boolean;
+  /** Optional bull/bear signal per market name. When provided, a colored dot appears next to each market link. TODO: thread from Layout once a summary query is available on the detail pages. */
+  summaries?: Record<string, { bull: boolean }>;
 }
 
 function SidebarSection({
@@ -59,10 +61,12 @@ function CategoryGroup({
   category,
   markets,
   selected,
+  summaries,
 }: {
   category: MarketCategory;
   markets: string[];
   selected?: string;
+  summaries?: Record<string, { bull: boolean }>;
 }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -119,9 +123,16 @@ function CategoryGroup({
                     : "text-slate-500 hover:text-white hover:bg-surface-800"
                 )}
               >
-                {isActive && (
+                {isActive ? (
                   <span className="w-1.5 h-1.5 rounded-full bg-brand-400 mr-2 shrink-0" />
-                )}
+                ) : summaries?.[name] ? (
+                  <span
+                    className={clsx(
+                      "w-1.5 h-1.5 rounded-full shrink-0 mr-1.5",
+                      summaries[name].bull ? "bg-emerald-400" : "bg-rose-400"
+                    )}
+                  />
+                ) : null}
                 <span className="truncate">{name}</span>
               </Link>
             );
@@ -132,7 +143,7 @@ function CategoryGroup({
   );
 }
 
-export default function Sidebar({ commodities, selected, loading }: Props) {
+export default function Sidebar({ commodities, selected, loading, summaries }: Props) {
   const router = useRouter();
 
   const { financialGroups, commodityGroups } = useMemo(() => {
@@ -246,6 +257,7 @@ export default function Sidebar({ commodities, selected, loading }: Props) {
                   category={cat}
                   markets={financialGroups.get(cat) ?? []}
                   selected={selected}
+                  summaries={summaries}
                 />
               ))}
             </SidebarSection>
@@ -257,6 +269,7 @@ export default function Sidebar({ commodities, selected, loading }: Props) {
                   category={cat}
                   markets={commodityGroups.get(cat) ?? []}
                   selected={selected}
+                  summaries={summaries}
                 />
               ))}
             </SidebarSection>

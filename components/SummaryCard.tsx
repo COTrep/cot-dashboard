@@ -24,7 +24,6 @@ function PositionBar({ long, short }: { long: number; short: number }) {
 }
 
 function SignalBadge({ net }: { net: number }) {
-  // Rough signal: positive commercial net = smart money long = bullish
   if (net > 0)
     return (
       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
@@ -38,12 +37,64 @@ function SignalBadge({ net }: { net: number }) {
   );
 }
 
+function MiniSparkline({ values }: { values?: number[] }) {
+  if (!values || values.length < 2) return null;
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const W = 100;
+  const H = 28;
+  const pad = 2;
+
+  const points = values
+    .map((v, i) => {
+      const x = pad + (i / (values.length - 1)) * (W - 2 * pad);
+      const y = H - pad - ((v - min) / range) * (H - 2 * pad);
+      return `${x},${y}`;
+    })
+    .join(" ");
+
+  const lastValue = values[values.length - 1];
+  const color = lastValue >= 0 ? "#10b981" : "#f87171";
+
+  // Clamp zero-line to within bounds
+  const rawZeroY = H - pad - ((0 - min) / range) * (H - 2 * pad);
+  const zeroY = Math.max(pad, Math.min(H - pad, rawZeroY));
+
+  return (
+    <svg
+      width="100%"
+      height={H}
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="none"
+      className="mt-2.5"
+    >
+      <line x1={pad} y1={zeroY} x2={W - pad} y2={zeroY} stroke="#1e293b" strokeWidth={0.5} />
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.5}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export default function SummaryCard({ summary }: Props) {
   const category = getMarketCategory(summary.name);
   const styles = CATEGORY_STYLES[category];
 
   const commNet = summary.commercialLong - summary.commercialShort;
   const mmNet = summary.managedMoneyLong - summary.managedMoneyShort;
+
+  // COT Index proxy: commNet relative to openInterest, mapped to 0–100%
+  const normalizedIndex = Math.max(
+    0,
+    Math.min(100, ((commNet / (summary.openInterest || 1) + 1) / 2) * 100)
+  );
 
   return (
     <Link
@@ -114,6 +165,26 @@ export default function SummaryCard({ summary }: Props) {
               </span>
             </div>
             <PositionBar long={summary.managedMoneyLong} short={summary.managedMoneyShort} />
+          </div>
+        </div>
+
+        {/* MM Net sparkline (renders only when mmNetHistory is populated) */}
+        <MiniSparkline values={summary.mmNetHistory} />
+
+        {/* COT Index proxy bar */}
+        <div className="mt-2.5">
+          <div className="flex justify-between text-[9px] font-mono text-slate-700 mb-0.5">
+            <span>COT IDX</span>
+            <span>{Math.round(normalizedIndex)}%</span>
+          </div>
+          <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+            <div
+              className={clsx(
+                "h-full rounded-full transition-all",
+                normalizedIndex >= 50 ? "bg-emerald-500" : "bg-rose-500"
+              )}
+              style={{ width: `${normalizedIndex}%` }}
+            />
           </div>
         </div>
       </div>
