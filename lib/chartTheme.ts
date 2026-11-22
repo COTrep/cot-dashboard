@@ -1,19 +1,24 @@
 export const CHART_COLORS = {
-  prodMerc:  { long: "#34d399", short: "#f87171", net: "#10b981" },
-  swap:      { long: "#fbbf24", short: "#f97316", net: "#f59e0b" },
-  mMoney:    { long: "#38bdf8", short: "#818cf8", net: "#0ea5e9" },
-  otherRept: { long: "#fb923c", short: "#f43f5e", net: "#f97316" },
-  nonRept:   { long: "#c084fc", short: "#e879f9", net: "#a855f7" },
-  oi:        "#64748b",
-  zero:      "#334155",
+  prodMerc:  { long: "#06b6d4", short: "#f43f5e", net: "#10b981" },
+  swap:      { long: "#f59e0b", short: "#fb7185", net: "#f97316" },
+  mMoney:    { long: "#a78bfa", short: "#f43f5e", net: "#3b82f6" },
+  otherRept: { long: "#fb7185", short: "#ef4444", net: "#f97316" },
+  nonRept:   { long: "#34d399", short: "#a78bfa", net: "#10b981" },
+  oi:        "#475569",
+  zero:      "#252d3d",
 } as const;
 
 export const CHART_TOOLTIP_STYLE = {
-  backgroundColor: "#1e293b",
-  borderColor: "#334155",
-  textStyle: { color: "#e2e8f0", fontFamily: "JetBrains Mono, monospace", fontSize: 11 },
+  backgroundColor: "#161b27",
+  borderColor: "#252d3d",
+  textStyle: { color: "#f1f5f9", fontFamily: "JetBrains Mono, monospace", fontSize: 11 },
 } as const;
 
 export const CHART_AXIS_LABEL = {
-  color: "#64748b", fontFamily: "JetBrains Mono, monospace", fontSize: 10,
+  color: "#3d4d6b", fontFamily: "JetBrains Mono, monospace", fontSize: 10,
+} as const;
+
+export const CHART_GRID = {
+  left: 60, right: 20, top: 20, bottom: 40,
+  containLabel: false,
 } as const;

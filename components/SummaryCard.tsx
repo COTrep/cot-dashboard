@@ -16,9 +16,18 @@ function PositionBar({ long, short }: { long: number; short: number }) {
   const total = long + short || 1;
   const longPct = (long / total) * 100;
   return (
-    <div className="flex h-1 rounded-sm overflow-hidden bg-slate-800">
-      <div className="bg-emerald-500 transition-all" style={{ width: `${longPct}%` }} />
-      <div className="bg-rose-600 flex-1" />
+    <div className="flex h-[3px] rounded-sm overflow-hidden bg-[#1a2030]">
+      <div
+        className="transition-all"
+        style={{
+          width: `${longPct}%`,
+          background: "linear-gradient(90deg,#3b82f6,#06b6d4)",
+        }}
+      />
+      <div
+        className="flex-1"
+        style={{ background: "linear-gradient(90deg,#f43f5e,#fb7185)" }}
+      />
     </div>
   );
 }
@@ -26,12 +35,12 @@ function PositionBar({ long, short }: { long: number; short: number }) {
 function SignalBadge({ net }: { net: number }) {
   if (net > 0)
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/25">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide bg-[#0a1f17] text-[#10b981] border border-[#0f3324]">
         ▲ BULL
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide bg-rose-500/10 text-rose-400 border border-rose-500/25">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide bg-[#1a0914] text-[#f43f5e] border border-[#2d0f1a]">
       ▼ BEAR
     </span>
   );
@@ -56,9 +65,8 @@ function MiniSparkline({ values }: { values?: number[] }) {
     .join(" ");
 
   const lastValue = values[values.length - 1];
-  const color = lastValue >= 0 ? "#10b981" : "#f87171";
+  const color = lastValue >= 0 ? "#10b981" : "#f43f5e";
 
-  // Clamp zero-line to within bounds
   const rawZeroY = H - pad - ((0 - min) / range) * (H - 2 * pad);
   const zeroY = Math.max(pad, Math.min(H - pad, rawZeroY));
 
@@ -70,7 +78,7 @@ function MiniSparkline({ values }: { values?: number[] }) {
       preserveAspectRatio="none"
       className="mt-2.5"
     >
-      <line x1={pad} y1={zeroY} x2={W - pad} y2={zeroY} stroke="#1e293b" strokeWidth={0.5} />
+      <line x1={pad} y1={zeroY} x2={W - pad} y2={zeroY} stroke="#252d3d" strokeWidth={0.5} />
       <polyline
         points={points}
         fill="none"
@@ -90,7 +98,6 @@ export default function SummaryCard({ summary }: Props) {
   const commNet = summary.commercialLong - summary.commercialShort;
   const mmNet = summary.managedMoneyLong - summary.managedMoneyShort;
 
-  // COT Index proxy: commNet relative to openInterest, mapped to 0–100%
   const normalizedIndex = Math.max(
     0,
     Math.min(100, ((commNet / (summary.openInterest || 1) + 1) / 2) * 100)
@@ -99,22 +106,42 @@ export default function SummaryCard({ summary }: Props) {
   return (
     <Link
       href={`/markets/${encodeURIComponent(summary.name)}`}
-      className={clsx(
-        "block bg-[#0d1117] border border-slate-800/80 rounded-lg overflow-hidden",
-        "hover:border-slate-600 hover:bg-[#111820] transition-all group"
-      )}
+      className="block relative rounded-lg overflow-hidden transition-all group"
+      style={{
+        background: "#161b27",
+        border: "1px solid #252d3d",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.35)",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.borderColor = "#3b82f6";
+        (e.currentTarget as HTMLElement).style.boxShadow =
+          "0 4px 20px rgba(59,130,246,0.1), 0 2px 12px rgba(0,0,0,0.35)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.borderColor = "#252d3d";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.35)";
+      }}
     >
-      {/* Accent bar top */}
-      <div className={clsx("h-0.5 w-full", styles.bar)} />
+      {/* Left stripe */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-[3px]"
+        style={{ background: styles.stripe }}
+      />
 
-      <div className="p-3.5">
+      {/* Top gradient overlay */}
+      <div
+        className="absolute top-0 left-0 right-0 h-16 pointer-events-none rounded-t-lg"
+        style={{ background: `linear-gradient(180deg, ${styles.glow} 0%, transparent 100%)` }}
+      />
+
+      <div className="relative pl-4 pr-3.5 py-3.5">
         {/* Header row */}
         <div className="flex items-start justify-between gap-2 mb-2.5">
           <div className="min-w-0">
-            <h3 className="text-xs font-mono font-semibold text-white leading-tight truncate group-hover:text-slate-200 transition-colors">
+            <h3 className="text-xs font-mono font-semibold text-[#f1f5f9] leading-tight truncate">
               {summary.name}
             </h3>
-            <p className="text-[10px] font-mono text-slate-600 mt-0.5">
+            <p className="text-[10px] font-mono text-[#3d4d6b] mt-0.5">
               {formatDate(summary.latestDate)}
             </p>
           </div>
@@ -124,17 +151,17 @@ export default function SummaryCard({ summary }: Props) {
         {/* OI + MM Net row */}
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div>
-            <p className="text-[10px] text-slate-600 uppercase tracking-wide mb-0.5">Open Interest</p>
-            <p className="text-sm font-mono font-bold text-slate-200">
+            <p className="text-[10px] text-[#3d4d6b] uppercase tracking-wide mb-0.5">Open Interest</p>
+            <p className="text-base font-mono font-bold text-[#f1f5f9]">
               {formatNumber(summary.openInterest)}
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-slate-600 uppercase tracking-wide mb-0.5">MM Net</p>
-            <p className={clsx(
-              "text-sm font-mono font-bold",
-              mmNet >= 0 ? "text-emerald-400" : "text-rose-400"
-            )}>
+            <p className="text-[10px] text-[#3d4d6b] uppercase tracking-wide mb-0.5">MM Net</p>
+            <p
+              className="text-base font-mono font-bold"
+              style={{ color: mmNet >= 0 ? "#10b981" : "#f43f5e" }}
+            >
               {mmNet >= 0 ? "+" : ""}{formatNumber(mmNet)}
             </p>
           </div>
@@ -144,11 +171,11 @@ export default function SummaryCard({ summary }: Props) {
         <div className="space-y-2">
           <div>
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] font-mono text-slate-600">COMMERCIAL</span>
-              <span className={clsx(
-                "text-[10px] font-mono font-medium",
-                commNet >= 0 ? "text-emerald-400" : "text-rose-400"
-              )}>
+              <span className="text-[10px] font-mono text-[#3d4d6b]">COMMERCIAL</span>
+              <span
+                className="text-[10px] font-mono font-medium"
+                style={{ color: commNet >= 0 ? "#10b981" : "#f43f5e" }}
+              >
                 {commNet >= 0 ? "+" : ""}{formatNumber(commNet)}
               </span>
             </div>
@@ -156,11 +183,11 @@ export default function SummaryCard({ summary }: Props) {
           </div>
           <div>
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] font-mono text-slate-600">MANAGED MONEY</span>
-              <span className={clsx(
-                "text-[10px] font-mono font-medium",
-                mmNet >= 0 ? "text-emerald-400" : "text-rose-400"
-              )}>
+              <span className="text-[10px] font-mono text-[#3d4d6b]">MANAGED MONEY</span>
+              <span
+                className="text-[10px] font-mono font-medium"
+                style={{ color: mmNet >= 0 ? "#10b981" : "#f43f5e" }}
+              >
                 {mmNet >= 0 ? "+" : ""}{formatNumber(mmNet)}
               </span>
             </div>
@@ -168,22 +195,25 @@ export default function SummaryCard({ summary }: Props) {
           </div>
         </div>
 
-        {/* MM Net sparkline (renders only when mmNetHistory is populated) */}
+        {/* MM Net sparkline */}
         <MiniSparkline values={summary.mmNetHistory} />
 
         {/* COT Index proxy bar */}
         <div className="mt-2.5">
-          <div className="flex justify-between text-[9px] font-mono text-slate-700 mb-0.5">
+          <div className="flex justify-between text-[9px] font-mono text-[#3d4d6b] mb-0.5">
             <span>COT IDX</span>
             <span>{Math.round(normalizedIndex)}%</span>
           </div>
-          <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-[3px] bg-[#1a2030] rounded-full overflow-hidden">
             <div
-              className={clsx(
-                "h-full rounded-full transition-all",
-                normalizedIndex >= 50 ? "bg-emerald-500" : "bg-rose-500"
-              )}
-              style={{ width: `${normalizedIndex}%` }}
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${normalizedIndex}%`,
+                background:
+                  normalizedIndex >= 50
+                    ? "linear-gradient(90deg,#10b981,#06b6d4)"
+                    : "#f43f5e",
+              }}
             />
           </div>
         </div>
