@@ -9,7 +9,7 @@ const fmt = (v: number) => {
   return a >= 1e6 ? `${s}${(a / 1e6).toFixed(1)}M` : a >= 1e3 ? `${s}${(a / 1e3).toFixed(0)}K` : String(v);
 };
 
-export default function CommodityOtherReportablesChart({ data, start }: { data: CotRow[]; start?: number }) {
+export default function CommodityOtherReportablesChart({ data, start, netOnly }: { data: CotRow[]; start?: number; netOnly?: boolean }) {
   const option = useMemo(() => {
     const dates  = data.map((r) => formatDate(r.as_of_date_in_form_yyyymmdd));
     const longs  = data.map((r) => r.other_rept_positions_long_all ?? null);
@@ -23,7 +23,7 @@ export default function CommodityOtherReportablesChart({ data, start }: { data: 
     return {
       backgroundColor: "transparent",
       legend: {
-        data: ["Long", "Short", "Net"],
+        data: netOnly ? ["Net"] : ["Long", "Short", "Net"],
         textStyle: { color: "#94a3b8", fontFamily: "JetBrains Mono, monospace", fontSize: 10 },
         top: 0, right: 0, itemWidth: 14, itemHeight: 8,
       },
@@ -57,15 +57,19 @@ export default function CommodityOtherReportablesChart({ data, start }: { data: 
         { type: "inside", start: dzStart, end: 100 },
       ],
       series: [
-        {
-          name: "Long", type: "line", data: longs, smooth: 0.3, symbol: "none",
-          lineStyle: { color: CHART_COLORS.otherRept.long, width: 2 },
-          markLine: { silent: true, symbol: "none", data: [{ yAxis: 0 }], lineStyle: { color: "#334155", type: "dashed", width: 1 }, label: { show: false } },
-        },
-        { name: "Short", type: "line", data: shorts, smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.otherRept.short, width: 2 } },
-        { name: "Net", type: "bar", data: nets, barMaxWidth: 6, itemStyle: { color: CHART_COLORS.otherRept.net, opacity: 0.7 } },
+        ...(!netOnly ? [
+          {
+            name: "Long", type: "line", data: longs, smooth: 0.3, symbol: "none",
+            lineStyle: { color: CHART_COLORS.otherRept.long, width: 2 },
+            markLine: { silent: true, symbol: "none", data: [{ yAxis: 0 }], lineStyle: { color: "#334155", type: "dashed", width: 1 }, label: { show: false } },
+          },
+          { name: "Short", type: "line", data: shorts, smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.otherRept.short, width: 2 } },
+        ] : []),
+        netOnly
+          ? { name: "Net", type: "line", data: nets, smooth: 0.3, symbol: "none", lineStyle: { color: CHART_COLORS.otherRept.net, width: 2.5 } }
+          : { name: "Net", type: "bar", data: nets, barMaxWidth: 6, itemStyle: { color: CHART_COLORS.otherRept.net, opacity: 0.7 } },
       ],
     };
-  }, [data, start]);
+  }, [data, start, netOnly]);
   return <ReactECharts option={option} style={{ height: "300px", width: "100%" }} opts={{ renderer: "canvas" }} />;
 }

@@ -6,6 +6,7 @@ import Layout from "../../components/Layout";
 import FilterBar from "../../components/FilterBar";
 import ExportButtons from "../../components/ExportButtons";
 import LegacyEquivalencePanel from "../../components/charts/LegacyEquivalencePanel";
+import ChartCard from "../../components/ChartCard";
 import { ChartSkeleton, Spinner } from "../../components/ui/Skeletons";
 import { fetchCommodityData } from "../../lib/queries";
 import { unslugify, formatDate, formatNumber } from "../../utils/format";
@@ -55,17 +56,6 @@ function StatBadge({ label, value, color }: { label: string; value: number; colo
   );
 }
 
-function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-surface-900 border border-surface-800 rounded-xl p-5">
-      <div className="mb-4">
-        <h2 className="font-display font-semibold text-white text-base">{title}</h2>
-        {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
-      </div>
-      {children}
-    </div>
-  );
-}
 
 const CommodityPage: NextPage<Props> = ({ commodityName }) => {
   const [data, setData] = useState<CotRow[]>([]);
@@ -74,7 +64,6 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [filterVersion, setFilterVersion] = useState(0);
-  const chartStart = filterVersion > 0 ? 0 : undefined;
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -88,6 +77,7 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
   useEffect(() => { loadData(); }, [loadData]);
 
   const latest = data[data.length - 1];
+  const dataLength = data.length;
 
   return (
     <>
@@ -148,36 +138,52 @@ const CommodityPage: NextPage<Props> = ({ commodityName }) => {
 
               {/* Charts */}
               <div className="space-y-5">
-                <ChartCard title="Producer/Merchant (Commercials)" subtitle="Long, Short y Neto — hedgers institucionales">
-                  <ProducerMerchantChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Producer/Merchant (Commercials)" subtitle="Long, Short y Neto — hedgers institucionales" showNetToggle dataLength={dataLength}>
+                  {({ dzStart, netOnly }) => (
+                    <ProducerMerchantChart key={filterVersion} data={data} start={dzStart} netOnly={netOnly} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Swap Dealers (parte de Commercials)" subtitle="Long, Short y Neto — intermediarios de swap">
-                  <SwapDealersChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Swap Dealers (parte de Commercials)" subtitle="Long, Short y Neto — intermediarios de swap" showNetToggle dataLength={dataLength}>
+                  {({ dzStart, netOnly }) => (
+                    <SwapDealersChart key={filterVersion} data={data} start={dzStart} netOnly={netOnly} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Managed Money (Non-Commercial / Funds)" subtitle="Long, Short y Neto — fondos especulativos">
-                  <ManagedMoneyChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Managed Money (Non-Commercial / Funds)" subtitle="Long, Short y Neto — fondos especulativos" showNetToggle dataLength={dataLength}>
+                  {({ dzStart, netOnly }) => (
+                    <ManagedMoneyChart key={filterVersion} data={data} start={dzStart} netOnly={netOnly} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Other Reportables" subtitle="Long, Short y Neto — otros reportables (no commercials, no MM)">
-                  <CommodityOtherReportablesChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Other Reportables" subtitle="Long, Short y Neto — otros reportables (no commercials, no MM)" showNetToggle dataLength={dataLength}>
+                  {({ dzStart, netOnly }) => (
+                    <CommodityOtherReportablesChart key={filterVersion} data={data} start={dzStart} netOnly={netOnly} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Non-Reportable" subtitle="Long, Short y Neto — posiciones no reportables (pequeños especuladores)">
-                  <CommodityNonreportableChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Non-Reportable" subtitle="Long, Short y Neto — posiciones no reportables (pequeños especuladores)" showNetToggle dataLength={dataLength}>
+                  {({ dzStart, netOnly }) => (
+                    <CommodityNonreportableChart key={filterVersion} data={data} start={dzStart} netOnly={netOnly} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Número de Traders por Categoría" subtitle="Participantes activos — máximo de long/short por grupo">
-                  <TradersBreakdownChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Número de Traders por Categoría" subtitle="Participantes activos — máximo de long/short por grupo" dataLength={dataLength}>
+                  {({ dzStart }) => (
+                    <TradersBreakdownChart key={filterVersion} data={data} start={dzStart} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Posiciones Netas Combinadas" subtitle="Neto de cada grupo superpuesto — click en leyenda para mostrar/ocultar">
-                  <CommodityCombinedNetChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Posiciones Netas Combinadas" subtitle="Neto de cada grupo superpuesto — click en leyenda para mostrar/ocultar" dataLength={dataLength}>
+                  {({ dzStart }) => (
+                    <CommodityCombinedNetChart key={filterVersion} data={data} start={dzStart} />
+                  )}
                 </ChartCard>
 
-                <ChartCard title="Open Interest" subtitle="Total de contratos abiertos">
-                  <OpenInterestChart key={filterVersion} data={data} start={chartStart} />
+                <ChartCard title="Open Interest" subtitle="Total de contratos abiertos" dataLength={dataLength}>
+                  {({ dzStart }) => (
+                    <OpenInterestChart key={filterVersion} data={data} start={dzStart} />
+                  )}
                 </ChartCard>
               </div>
 
