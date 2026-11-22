@@ -29,13 +29,13 @@ interface Props {
 }
 
 const btnBase =
-  "text-[9px] font-bold tracking-wider uppercase font-mono px-2.5 py-1 rounded-md border transition-all";
+  "text-[10px] font-semibold tracking-wide px-2 py-1 rounded-[3px] border transition-colors";
 const btnDefault =
-  "border-[#252d3d] text-[#3d4d6b] bg-transparent hover:border-[#3b82f6] hover:text-[#8b98b2]";
+  "border-transparent text-[#787b86] bg-transparent hover:bg-[#2a2e39] hover:text-[#d1d4dc]";
 const btnActive =
-  "border-[#3b82f6] text-[#3b82f6] bg-[rgba(59,130,246,0.08)]";
+  "bg-[#0a1535] text-[#2962ff] border-[rgba(41,98,255,.3)]";
 const netActive =
-  "border-[#a78bfa] text-[#a78bfa] bg-[rgba(167,139,250,0.06)]";
+  "bg-[rgba(38,166,154,.08)] text-[#26a69a] border-[rgba(38,166,154,.25)]";
 
 export default function ChartCard({
   title,
@@ -51,13 +51,23 @@ export default function ChartCard({
   const dzStart = periodToDataZoomStart(period, dataLength);
 
   return (
-    <div className="bg-[#161b27] border border-[#252d3d] rounded-xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.35)] hover:border-[#3b82f6] transition-all">
-      <div className="px-4 py-3 border-b border-[#1a2030] flex items-center justify-between">
+    <div
+      className="overflow-hidden transition-colors"
+      style={{
+        background: "#1e222d",
+        border: "1px solid #2a2e39",
+        borderRadius: "4px",
+      }}
+    >
+      <div
+        className="px-3 h-9 flex items-center justify-between border-b"
+        style={{ borderColor: "#2a2e39" }}
+      >
         <div>
-          <h2 className="font-display font-bold text-sm tracking-tight text-[#f1f5f9]">{title}</h2>
-          {subtitle && <p className="text-[10px] text-[#8b98b2] mt-0.5">{subtitle}</p>}
+          <h2 className="font-semibold text-[12px] tracking-tight" style={{ color: "#d1d4dc" }}>{title}</h2>
+          {subtitle && <p className="text-[10px] mt-0.5" style={{ color: "#787b86" }}>{subtitle}</p>}
         </div>
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="flex items-center gap-1 flex-shrink-0">
           {showNetToggle && (
             <>
               <button
@@ -66,10 +76,10 @@ export default function ChartCard({
               >
                 Net
               </button>
-              <div className="w-px h-4 bg-[#252d3d] mx-1" />
+              <div className="w-px h-4 mx-1" style={{ background: "#2a2e39" }} />
             </>
           )}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {PERIODS.map(p => (
               <button
                 key={p.key}

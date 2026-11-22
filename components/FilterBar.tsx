@@ -32,11 +32,11 @@ function presetMatchesDates(years: number, dateFrom: string, dateTo: string): bo
 }
 
 const presetBase =
-  "text-[9px] font-bold tracking-widest uppercase font-mono px-3 py-1.5 rounded-md border transition-all";
+  "text-[10px] font-semibold tracking-wide px-2 py-1 rounded-[3px] border transition-colors";
 const presetDefault =
-  "border-[#252d3d] text-[#3d4d6b] bg-transparent hover:border-[#3b82f6] hover:text-[#8b98b2]";
+  "border-transparent text-[#787b86] bg-transparent hover:bg-[#2a2e39] hover:text-[#d1d4dc]";
 const presetActive =
-  "border-[#3b82f6] text-[#3b82f6] bg-[rgba(59,130,246,0.08)]";
+  "bg-[#0a1535] text-[#2962ff] border-[rgba(41,98,255,.3)]";
 
 export default function FilterBar({
   dateFrom,
@@ -46,7 +46,7 @@ export default function FilterBar({
   onReset,
 }: Props) {
   const inputClass =
-    "bg-[#161b27] border border-[#252d3d] text-[#f1f5f9] text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-[#3b82f6] transition-colors font-mono";
+    "text-[11px] rounded-[3px] px-2.5 py-1.5 focus:outline-none transition-colors font-mono";
 
   const applyPreset = (years: number) => {
     const to = new Date();
@@ -81,21 +81,35 @@ export default function FilterBar({
         </button>
       </div>
       <div className="flex items-center gap-2">
-        <label className="text-[9px] text-[#3d4d6b] font-mono uppercase tracking-wider">From</label>
+        <label className="text-[9px] uppercase tracking-wider" style={{ color: "#4a5060" }}>From</label>
         <input
           type="date"
           value={dateFrom}
           onChange={(e) => onDateFromChange(e.target.value)}
           className={inputClass}
+          style={{
+            background: "#2a2e39",
+            border: "1px solid #363a45",
+            color: "#d1d4dc",
+          }}
+          onFocus={(e) => { (e.target as HTMLElement).style.borderColor = "#2962ff"; }}
+          onBlur={(e) => { (e.target as HTMLElement).style.borderColor = "#363a45"; }}
         />
       </div>
       <div className="flex items-center gap-2">
-        <label className="text-[9px] text-[#3d4d6b] font-mono uppercase tracking-wider">To</label>
+        <label className="text-[9px] uppercase tracking-wider" style={{ color: "#4a5060" }}>To</label>
         <input
           type="date"
           value={dateTo}
           onChange={(e) => onDateToChange(e.target.value)}
           className={inputClass}
+          style={{
+            background: "#2a2e39",
+            border: "1px solid #363a45",
+            color: "#d1d4dc",
+          }}
+          onFocus={(e) => { (e.target as HTMLElement).style.borderColor = "#2962ff"; }}
+          onBlur={(e) => { (e.target as HTMLElement).style.borderColor = "#363a45"; }}
         />
       </div>
       <button

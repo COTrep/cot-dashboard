@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,20 +6,38 @@
 
 :root {
   --sidebar-width: 280px;
-  --bg-base: #0b0d14;
-  --bg-surface: #161b27;
-  --bg-elevated: #1c2235;
-  --bg-inset: #0d1017;
-  --border: #252d3d;
-  --border-muted: #1a2030;
-  --text-primary: #f1f5f9;
-  --text-secondary: #8b98b2;
-  --text-muted: #3d4d6b;
-  --brand: #3b82f6;
-  --bull: #10b981;
-  --bull-bg: #0a1f17;
-  --bear: #f43f5e;
-  --bear-bg: #1a0914;
+  --tv-bg:          #131722;
+  --tv-surface:     #1e222d;
+  --tv-elevated:    #2a2e39;
+  --tv-border:      #2a2e39;
+  --tv-border2:     #363a45;
+  --tv-text:        #d1d4dc;
+  --tv-text2:       #787b86;
+  --tv-text3:       #4a5060;
+  --tv-bull:        #26a69a;
+  --tv-bull-bg:     #0d1f1e;
+  --tv-bull-border: rgba(38,166,154,.2);
+  --tv-bear:        #ef5350;
+  --tv-bear-bg:     #1f0d0d;
+  --tv-bear-border: rgba(239,83,80,.2);
+  --tv-blue:        #2962ff;
+  --tv-blue-bg:     #0a1535;
+  --tv-blue-border: rgba(41,98,255,.3);
+  /* legacy aliases */
+  --bg-base:        #131722;
+  --bg-surface:     #1e222d;
+  --bg-elevated:    #2a2e39;
+  --bg-inset:       #0d1017;
+  --border:         #2a2e39;
+  --border-muted:   #1a2030;
+  --text-primary:   #d1d4dc;
+  --text-secondary: #787b86;
+  --text-muted:     #4a5060;
+  --brand:          #2962ff;
+  --bull:           #26a69a;
+  --bull-bg:        #0d1f1e;
+  --bear:           #ef5350;
+  --bear-bg:        #1f0d0d;
 }
 
 html {
@@ -27,14 +45,17 @@ html {
 }
 
 body {
-  @apply bg-[#0b0d14] text-[#f1f5f9] font-sans antialiased;
+  background-color: #131722;
+  color: #d1d4dc;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Thin scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { @apply bg-surface-900; }
-::-webkit-scrollbar-thumb { @apply bg-surface-700 rounded-full; }
-::-webkit-scrollbar-thumb:hover { @apply bg-surface-300; }
+::-webkit-scrollbar-track { background: #131722; }
+::-webkit-scrollbar-thumb { background: #2a2e39; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #363a45; }
 
 /* ECharts canvas sizing fix */
 .echarts-container canvas { display: block; }

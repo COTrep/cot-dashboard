@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+﻿import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotRow } from "../../lib/types";
 import { formatDate } from "../../utils/format";
@@ -28,7 +28,7 @@ export default function OpenInterestChart({ data, start }: Props & { start?: num
       xAxis: {
         type: "category",
         data: dates,
-        axisLine: { lineStyle: { color: "#252d3d" } },
+        axisLine: { lineStyle: { color: "#2a2e39" } },
         axisLabel: {
           ...CHART_AXIS_LABEL,
           rotate: 30,
@@ -45,10 +45,10 @@ export default function OpenInterestChart({ data, start }: Props & { start?: num
           formatter: (v: number) =>
             v >= 1_000_000 ? `${(v / 1_000_000).toFixed(1)}M` : v >= 1_000 ? `${(v / 1_000).toFixed(0)}K` : String(v),
         },
-        splitLine: { lineStyle: { color: "#252d3d" } },
+        splitLine: { lineStyle: { color: "#2a2e39" } },
       },
       dataZoom: [
-        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#252d3d", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#3d4d6b", fontSize: 9 }, showDetail: false },
+        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#2a2e39", fillerColor: "rgba(41,98,255,0.12)", handleStyle: { color: "#2962ff", borderColor: "#2962ff" }, textStyle: { color: "#4a5060", fontSize: 9 }, showDetail: false },
         { type: "inside", start: dzStart, end: 100 },
       ],
       series: [

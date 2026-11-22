@@ -1,33 +1,30 @@
 import React from "react";
 import Link from "next/link";
-import clsx from "clsx";
 import type { CommoditySummary } from "../lib/types";
 import { formatNumber, formatDate } from "../utils/format";
-import {
-  getMarketCategory,
-  CATEGORY_STYLES,
-} from "../lib/marketCategories";
+import { getMarketCategory } from "../lib/marketCategories";
 
 interface Props {
   summary: CommoditySummary;
 }
 
+const CATEGORY_ACCENT: Record<string, string> = {
+  energy:      "#ef5350",
+  metals:      "#26a69a",
+  agriculture: "#ff6d00",
+  livestock:   "#ff7043",
+  equity:      "#2962ff",
+  rates:       "#00bcd4",
+  fx:          "#2962ff",
+  other:       "#787b86",
+};
+
 function PositionBar({ long, short }: { long: number; short: number }) {
   const total = long + short || 1;
   const longPct = (long / total) * 100;
   return (
-    <div className="flex h-[3px] rounded-sm overflow-hidden bg-[#1a2030]">
-      <div
-        className="transition-all"
-        style={{
-          width: `${longPct}%`,
-          background: "linear-gradient(90deg,#3b82f6,#06b6d4)",
-        }}
-      />
-      <div
-        className="flex-1"
-        style={{ background: "linear-gradient(90deg,#f43f5e,#fb7185)" }}
-      />
+    <div className="flex h-[2px] overflow-hidden" style={{ background: "#ef5350" }}>
+      <div style={{ width: `${longPct}%`, background: "#26a69a" }} />
     </div>
   );
 }
@@ -35,12 +32,18 @@ function PositionBar({ long, short }: { long: number; short: number }) {
 function SignalBadge({ net }: { net: number }) {
   if (net > 0)
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide bg-[#0a1f17] text-[#10b981] border border-[#0f3324]">
+      <span
+        className="inline-flex items-center gap-1 text-[9px] font-bold tracking-wide px-1.5 py-0.5 rounded-[2px]"
+        style={{ background: "#0d1f1e", color: "#26a69a", border: "1px solid rgba(38,166,154,0.2)" }}
+      >
         ▲ BULL
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide bg-[#1a0914] text-[#f43f5e] border border-[#2d0f1a]">
+    <span
+      className="inline-flex items-center gap-1 text-[9px] font-bold tracking-wide px-1.5 py-0.5 rounded-[2px]"
+      style={{ background: "#1f0d0d", color: "#ef5350", border: "1px solid rgba(239,83,80,0.2)" }}
+    >
       ▼ BEAR
     </span>
   );
@@ -65,7 +68,7 @@ function MiniSparkline({ values }: { values?: number[] }) {
     .join(" ");
 
   const lastValue = values[values.length - 1];
-  const color = lastValue >= 0 ? "#10b981" : "#f43f5e";
+  const color = lastValue >= 0 ? "#26a69a" : "#ef5350";
 
   const rawZeroY = H - pad - ((0 - min) / range) * (H - 2 * pad);
   const zeroY = Math.max(pad, Math.min(H - pad, rawZeroY));
@@ -76,9 +79,9 @@ function MiniSparkline({ values }: { values?: number[] }) {
       height={H}
       viewBox={`0 0 ${W} ${H}`}
       preserveAspectRatio="none"
-      className="mt-2.5"
+      className="mt-2"
     >
-      <line x1={pad} y1={zeroY} x2={W - pad} y2={zeroY} stroke="#252d3d" strokeWidth={0.5} />
+      <line x1={pad} y1={zeroY} x2={W - pad} y2={zeroY} stroke="#2a2e39" strokeWidth={0.5} />
       <polyline
         points={points}
         fill="none"
@@ -93,7 +96,7 @@ function MiniSparkline({ values }: { values?: number[] }) {
 
 export default function SummaryCard({ summary }: Props) {
   const category = getMarketCategory(summary.name);
-  const styles = CATEGORY_STYLES[category];
+  const accentColor = CATEGORY_ACCENT[category] ?? "#787b86";
 
   const commNet = summary.commercialLong - summary.commercialShort;
   const mmNet = summary.managedMoneyLong - summary.managedMoneyShort;
@@ -106,42 +109,33 @@ export default function SummaryCard({ summary }: Props) {
   return (
     <Link
       href={`/markets/${encodeURIComponent(summary.name)}`}
-      className="block relative rounded-lg overflow-hidden transition-all group"
+      className="block relative overflow-hidden transition-colors"
       style={{
-        background: "#161b27",
-        border: "1px solid #252d3d",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.35)",
+        background: "#1e222d",
+        border: "1px solid #2a2e39",
+        borderRadius: "4px",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "#3b82f6";
-        (e.currentTarget as HTMLElement).style.boxShadow =
-          "0 4px 20px rgba(59,130,246,0.1), 0 2px 12px rgba(0,0,0,0.35)";
+        (e.currentTarget as HTMLElement).style.borderColor = "#363a45";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "#252d3d";
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.35)";
+        (e.currentTarget as HTMLElement).style.borderColor = "#2a2e39";
       }}
     >
-      {/* Left stripe */}
+      {/* Left accent strip */}
       <div
-        className="absolute left-0 top-0 bottom-0 w-[3px]"
-        style={{ background: styles.stripe }}
+        className="absolute left-0 top-0 bottom-0 w-[2px]"
+        style={{ background: accentColor }}
       />
 
-      {/* Top gradient overlay */}
-      <div
-        className="absolute top-0 left-0 right-0 h-16 pointer-events-none rounded-t-lg"
-        style={{ background: `linear-gradient(180deg, ${styles.glow} 0%, transparent 100%)` }}
-      />
-
-      <div className="relative pl-4 pr-3.5 py-3.5">
+      <div className="pl-3.5 pr-2.5 py-2.5">
         {/* Header row */}
-        <div className="flex items-start justify-between gap-2 mb-2.5">
+        <div className="flex items-start justify-between gap-2 mb-2">
           <div className="min-w-0">
-            <h3 className="text-xs font-mono font-semibold text-[#f1f5f9] leading-tight truncate">
+            <h3 className="text-[13px] font-semibold leading-tight truncate tracking-tight" style={{ color: "#d1d4dc" }}>
               {summary.name}
             </h3>
-            <p className="text-[10px] font-mono text-[#3d4d6b] mt-0.5">
+            <p className="text-[9px] uppercase tracking-wider mt-0.5" style={{ color: "#4a5060" }}>
               {formatDate(summary.latestDate)}
             </p>
           </div>
@@ -149,32 +143,32 @@ export default function SummaryCard({ summary }: Props) {
         </div>
 
         {/* OI + MM Net row */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="grid grid-cols-2 gap-2 mb-2.5">
           <div>
-            <p className="text-[10px] text-[#3d4d6b] uppercase tracking-wide mb-0.5">Open Interest</p>
-            <p className="text-base font-mono font-bold text-[#f1f5f9]">
+            <p className="text-[9px] uppercase tracking-wider mb-0.5" style={{ color: "#4a5060" }}>Open Interest</p>
+            <p className="text-[14px] font-semibold font-mono tabular-nums" style={{ color: "#d1d4dc" }}>
               {formatNumber(summary.openInterest)}
             </p>
           </div>
           <div>
-            <p className="text-[10px] text-[#3d4d6b] uppercase tracking-wide mb-0.5">MM Net</p>
+            <p className="text-[9px] uppercase tracking-wider mb-0.5" style={{ color: "#4a5060" }}>MM Net</p>
             <p
-              className="text-base font-mono font-bold"
-              style={{ color: mmNet >= 0 ? "#10b981" : "#f43f5e" }}
+              className="text-[14px] font-semibold font-mono tabular-nums"
+              style={{ color: mmNet >= 0 ? "#26a69a" : "#ef5350" }}
             >
               {mmNet >= 0 ? "+" : ""}{formatNumber(mmNet)}
             </p>
           </div>
         </div>
 
-        {/* Net positions */}
-        <div className="space-y-2">
+        {/* Position bars */}
+        <div className="space-y-2 border-t pt-2" style={{ borderColor: "#2a2e39" }}>
           <div>
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] font-mono text-[#3d4d6b]">COMMERCIAL</span>
+              <span className="text-[9px] uppercase tracking-wider" style={{ color: "#4a5060" }}>Commercial</span>
               <span
-                className="text-[10px] font-mono font-medium"
-                style={{ color: commNet >= 0 ? "#10b981" : "#f43f5e" }}
+                className="text-[9px] font-mono font-medium"
+                style={{ color: commNet >= 0 ? "#26a69a" : "#ef5350" }}
               >
                 {commNet >= 0 ? "+" : ""}{formatNumber(commNet)}
               </span>
@@ -183,10 +177,10 @@ export default function SummaryCard({ summary }: Props) {
           </div>
           <div>
             <div className="flex justify-between items-center mb-1">
-              <span className="text-[10px] font-mono text-[#3d4d6b]">MANAGED MONEY</span>
+              <span className="text-[9px] uppercase tracking-wider" style={{ color: "#4a5060" }}>Managed Money</span>
               <span
-                className="text-[10px] font-mono font-medium"
-                style={{ color: mmNet >= 0 ? "#10b981" : "#f43f5e" }}
+                className="text-[9px] font-mono font-medium"
+                style={{ color: mmNet >= 0 ? "#26a69a" : "#ef5350" }}
               >
                 {mmNet >= 0 ? "+" : ""}{formatNumber(mmNet)}
               </span>
@@ -198,21 +192,18 @@ export default function SummaryCard({ summary }: Props) {
         {/* MM Net sparkline */}
         <MiniSparkline values={summary.mmNetHistory} />
 
-        {/* COT Index proxy bar */}
-        <div className="mt-2.5">
-          <div className="flex justify-between text-[9px] font-mono text-[#3d4d6b] mb-0.5">
+        {/* COT Index bar */}
+        <div className="mt-2">
+          <div className="flex justify-between text-[9px] font-mono mb-0.5" style={{ color: "#4a5060" }}>
             <span>COT IDX</span>
             <span>{Math.round(normalizedIndex)}%</span>
           </div>
-          <div className="h-[3px] bg-[#1a2030] rounded-full overflow-hidden">
+          <div className="h-[2px] rounded-full overflow-hidden" style={{ background: "#2a2e39" }}>
             <div
               className="h-full rounded-full transition-all"
               style={{
                 width: `${normalizedIndex}%`,
-                background:
-                  normalizedIndex >= 50
-                    ? "linear-gradient(90deg,#10b981,#06b6d4)"
-                    : "#f43f5e",
+                background: normalizedIndex >= 50 ? "#26a69a" : "#ef5350",
               }}
             />
           </div>

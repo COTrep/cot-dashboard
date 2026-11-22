@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+﻿import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotFinancialsRow } from "../../lib/types";
 import { CHART_COLORS, CHART_TOOLTIP_STYLE, CHART_AXIS_LABEL } from "../../lib/chartTheme";
@@ -41,7 +41,7 @@ export default function FinancialCombinedNetChart({ data, start }: { data: CotFi
       legend: {
         data: [...SERIES_NAMES],
         selectedMode: true,
-        textStyle: { color: "#94a3b8", fontFamily: "JetBrains Mono, monospace", fontSize: 10 },
+        textStyle: { color: "#787b86", fontFamily: "Inter, system-ui", fontSize: 10 },
         top: 0, right: 0, itemWidth: 14, itemHeight: 8,
       },
       tooltip: {
@@ -50,7 +50,7 @@ export default function FinancialCombinedNetChart({ data, start }: { data: CotFi
         formatter: (params: any[]) => {
           let html = `<div style="font-weight:600;margin-bottom:4px">${params[0]?.axisValue}</div>`;
           for (const p of params) {
-            html += `<div style="display:flex;justify-content:space-between;gap:20px"><span style="color:#94a3b8">${p.seriesName}</span><span style="color:${COLOR_MAP[p.seriesName]};font-weight:600">${fmt(p.value)}</span></div>`;
+            html += `<div style="display:flex;justify-content:space-between;gap:20px"><span style="color:#787b86">${p.seriesName}</span><span style="color:${COLOR_MAP[p.seriesName]};font-weight:600">${fmt(p.value)}</span></div>`;
           }
           return html;
         },
@@ -58,17 +58,17 @@ export default function FinancialCombinedNetChart({ data, start }: { data: CotFi
       grid: { left: 60, right: 20, top: 36, bottom: 85 },
       xAxis: {
         type: "category", data: dates,
-        axisLine: { lineStyle: { color: "#252d3d" } },
+        axisLine: { lineStyle: { color: "#2a2e39" } },
         axisLabel: { ...CHART_AXIS_LABEL, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value", axisLine: { show: false }, axisTick: { show: false },
         axisLabel: { ...CHART_AXIS_LABEL, formatter: fmt },
-        splitLine: { lineStyle: { color: "#252d3d" } },
+        splitLine: { lineStyle: { color: "#2a2e39" } },
       },
       dataZoom: [
-        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#252d3d", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#3d4d6b", fontSize: 9 }, showDetail: false },
+        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#2a2e39", fillerColor: "rgba(41,98,255,0.12)", handleStyle: { color: "#2962ff", borderColor: "#2962ff" }, textStyle: { color: "#4a5060", fontSize: 9 }, showDetail: false },
         { type: "inside", start: dzStart, end: 100 },
       ],
       series: [
@@ -78,7 +78,7 @@ export default function FinancialCombinedNetChart({ data, start }: { data: CotFi
           markLine: {
             silent: true, symbol: "none",
             data: [{ yAxis: 0 }],
-            lineStyle: { color: "#252d3d", type: "dashed", width: 1 },
+            lineStyle: { color: "#2a2e39", type: "dashed", width: 1 },
             label: { show: false },
           },
         },

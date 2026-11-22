@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+﻿import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotRow } from "../../lib/types";
 import { formatDate } from "../../utils/format";
@@ -25,7 +25,7 @@ export default function TradersBreakdownChart({ data, start }: { data: CotRow[];
       backgroundColor: "transparent",
       legend: {
         data: ["Prod/Merc", "Swap", "Managed Money", "Other Rept.", "Total"],
-        textStyle: { color: "#94a3b8", fontFamily: "JetBrains Mono, monospace", fontSize: 10 },
+        textStyle: { color: "#787b86", fontFamily: "Inter, system-ui", fontSize: 10 },
         top: 0, right: 0, itemWidth: 14, itemHeight: 8,
       },
       tooltip: {
@@ -42,8 +42,8 @@ export default function TradersBreakdownChart({ data, start }: { data: CotRow[];
           };
           for (const p of params) {
             if (p.value == null) continue;
-            const c = colors[p.seriesName] ?? "#94a3b8";
-            html += `<div style="display:flex;justify-content:space-between;gap:20px"><span style="color:#94a3b8">${p.seriesName}</span><span style="color:${c};font-weight:600">${p.value}</span></div>`;
+            const c = colors[p.seriesName] ?? "#787b86";
+            html += `<div style="display:flex;justify-content:space-between;gap:20px"><span style="color:#787b86">${p.seriesName}</span><span style="color:${c};font-weight:600">${p.value}</span></div>`;
           }
           return html;
         },
@@ -51,18 +51,18 @@ export default function TradersBreakdownChart({ data, start }: { data: CotRow[];
       grid: { left: 50, right: 20, top: 30, bottom: 85 },
       xAxis: {
         type: "category", data: dates,
-        axisLine: { lineStyle: { color: "#252d3d" } },
+        axisLine: { lineStyle: { color: "#2a2e39" } },
         axisLabel: { ...CHART_AXIS_LABEL, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value", axisLine: { show: false }, axisTick: { show: false },
         axisLabel: { ...CHART_AXIS_LABEL },
-        splitLine: { lineStyle: { color: "#252d3d" } },
+        splitLine: { lineStyle: { color: "#2a2e39" } },
         minInterval: 1,
       },
       dataZoom: [
-        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#252d3d", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#3d4d6b", fontSize: 9 }, showDetail: false },
+        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#2a2e39", fillerColor: "rgba(41,98,255,0.12)", handleStyle: { color: "#2962ff", borderColor: "#2962ff" }, textStyle: { color: "#4a5060", fontSize: 9 }, showDetail: false },
         { type: "inside", start: dzStart, end: 100 },
       ],
       series: [

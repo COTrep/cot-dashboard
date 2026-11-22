@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+﻿import React, { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import type { CotFinancialsRow } from "../../lib/types";
 import { CHART_COLORS, CHART_TOOLTIP_STYLE, CHART_AXIS_LABEL } from "../../lib/chartTheme";
@@ -24,17 +24,17 @@ export default function FinancialOIChart({ data, start }: { data: CotFinancialsR
       grid: { left: 60, right: 20, top: 20, bottom: 85 },
       xAxis: {
         type: "category", data: dates,
-        axisLine: { lineStyle: { color: "#252d3d" } },
+        axisLine: { lineStyle: { color: "#2a2e39" } },
         axisLabel: { ...CHART_AXIS_LABEL, rotate: 30, interval: "auto" },
         splitLine: { show: false },
       },
       yAxis: {
         type: "value", axisLine: { show: false }, axisTick: { show: false },
         axisLabel: { ...CHART_AXIS_LABEL, formatter: fmt },
-        splitLine: { lineStyle: { color: "#252d3d" } },
+        splitLine: { lineStyle: { color: "#2a2e39" } },
       },
       dataZoom: [
-        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#252d3d", fillerColor: "rgba(99,102,241,0.12)", handleStyle: { color: "#6366f1", borderColor: "#6366f1" }, textStyle: { color: "#3d4d6b", fontSize: 9 }, showDetail: false },
+        { type: "slider", start: dzStart, end: 100, height: 20, bottom: 8, borderColor: "#2a2e39", fillerColor: "rgba(41,98,255,0.12)", handleStyle: { color: "#2962ff", borderColor: "#2962ff" }, textStyle: { color: "#4a5060", fontSize: 9 }, showDetail: false },
         { type: "inside", start: dzStart, end: 100 },
       ],
       series: [{
